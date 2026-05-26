@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Production Floor Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ── PASTE YOUR APPS SCRIPT WEB APP URL BELOW ── */
+/* Find it in: Apps Script → Deploy → Manage Deployments → copy Web App URL */
+
+:root{
+  --bg:#0f0f0f;--bg2:#161616;--bg3:#1e1e1e;--bg4:#252525;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);
+  --text:#f0f0f0;--text2:#999;--text3:#555;
+  --blue:#3b82f6;--blue-dim:rgba(59,130,246,0.13);
+  --amber:#f59e0b;--amber-dim:rgba(245,158,11,0.13);
+  --green:#22c55e;--green-dim:rgba(34,197,94,0.13);
+  --red:#ef4444;--red-dim:rgba(239,68,68,0.13);
+  --purple:#a855f7;--purple-dim:rgba(168,85,247,0.13);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+.shell{max-width:1400px;margin:0 auto;padding:28px 24px}
+
+/* ── Header ── */
+.header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.brand{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.brand-dot{width:8px;height:8px;border-radius:50%;background:var(--text3);transition:background .4s}
+.brand-name{font-size:20px;font-weight:600;letter-spacing:-.4px}
+.sync-line{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace}
+.header-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.search{font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 13px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);width:210px;outline:none}
+.search:focus{border-color:var(--blue)}
+.search::placeholder{color:var(--text3)}
+.btn{font-family:'DM Sans',sans-serif;font-size:12px;padding:7px 13px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;transition:all .2s;white-space:nowrap}
+.btn:hover{background:var(--bg4);color:var(--text)}
+
+/* ── Stats ── */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:22px}
+.stat{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:13px 15px}
+.stat-label{font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em;font-family:'DM Mono',monospace}
+.stat-val{font-size:24px;font-weight:500}
+.c-blue{color:var(--blue)}.c-amber{color:var(--amber)}.c-green{color:var(--green)}.c-red{color:var(--red)}
+
+/* ── Filters ── */
+.filter-row{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap}
+.fbtn{font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 14px;border-radius:999px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;transition:all .15s}
+.fbtn:hover{color:var(--text);border-color:var(--border2)}
+.fbtn.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.fbtn.on-amber{background:var(--amber);border-color:var(--amber);color:#000}
+.fbtn.on-green{background:var(--green);border-color:var(--green);color:#000}
+.fbtn.on-purple{background:var(--purple);border-color:var(--purple);color:#fff}
+
+/* ── Grid ── */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:12px}
+
+/* ── Card ── */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:border-color .15s;cursor:pointer}
+.card:hover{border-color:var(--border2)}
+.card.open{border-color:rgba(59,130,246,.35)}
+.card-top{padding:15px 17px}
+.card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:9px}
+.proj-name{font-size:14px;font-weight:500;line-height:1.3}
+.proj-meta{font-size:11px;color:var(--text3);margin-top:2px;font-family:'DM Mono',monospace}
+.badge{font-size:10px;padding:3px 8px;border-radius:999px;white-space:nowrap;flex-shrink:0;font-family:'DM Mono',monospace;font-weight:500;letter-spacing:.03em}
+.b-wip   {background:var(--blue-dim);  color:var(--blue);  border:1px solid rgba(59,130,246,.2)}
+.b-hold  {background:var(--amber-dim); color:var(--amber); border:1px solid rgba(245,158,11,.2)}
+.b-done  {background:var(--green-dim); color:var(--green); border:1px solid rgba(34,197,94,.2)}
+
+/* ── Progress ── */
+.prog-area{margin:9px 0 7px}
+.prog-lbl{display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:5px}
+.prog-pct{font-family:'DM Mono',monospace;color:var(--text2)}
+.track{height:4px;background:var(--bg4);border-radius:2px;overflow:hidden}
+.fill{height:100%;border-radius:2px}
+
+/* ── Tags row ── */
+.tags-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:7px}
+.dept-tag{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:2px 9px;border-radius:999px;background:var(--bg4);color:var(--text2);border:1px solid var(--border)}
+.dept-dot{width:5px;height:5px;border-radius:50%;background:var(--blue);flex-shrink:0}
+.deadline{font-size:11px;font-family:'DM Mono',monospace}
+.dl-late{color:var(--red)}.dl-soon{color:var(--amber)}.dl-ok{color:var(--text3)}
+.activity-tag{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace}
+.activity-tag.stale{color:var(--amber)}
+
+/* ── Expand hint ── */
+.expand-hint{font-size:11px;color:var(--text3);margin-top:8px;display:flex;align-items:center;gap:4px}
+
+/* ── Products section ── */
+.products-wrap{border-top:1px solid var(--border);padding:13px 17px;background:rgba(0,0,0,.25)}
+.sec-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-family:'DM Mono',monospace;margin-bottom:10px}
+.prod{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px}
+.prod:last-child{margin-bottom:0}
+.prod-head{display:flex;justify-content:space-between;align-items:flex-start;gap:6px;margin-bottom:5px}
+.prod-name{font-size:12px;font-weight:500}
+.prod-code{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:1px}
+.prod-pct{font-size:11px;font-family:'DM Mono',monospace;color:var(--text2);white-space:nowrap}
+.prod-track{height:3px;background:var(--bg4);border-radius:2px;overflow:hidden;margin:4px 0 5px}
+.prod-fill{height:100%;border-radius:2px}
+.dep-chips{display:flex;gap:3px;flex-wrap:wrap;margin:4px 0}
+.chip{font-size:10px;padding:2px 7px;border-radius:999px;border:1px solid var(--border);color:var(--text3);font-family:'DM Mono',monospace}
+.chip.cur{background:var(--blue);border-color:var(--blue);color:#fff}
+.chip.done-chip{background:var(--green-dim);border-color:rgba(34,197,94,.2);color:var(--green)}
+.prod-activity{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:4px}
+.prod-activity.stale{color:var(--amber)}
+
+/* ── Mat table ── */
+.mat-dept-block{margin-top:8px}
+.mat-dept-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;font-family:'DM Mono',monospace;padding-bottom:3px;border-bottom:1px solid var(--border);margin-bottom:3px}
+.mat-table{width:100%;border-collapse:collapse;font-size:11px}
+.mat-table th{color:var(--text3);text-align:left;padding:3px 4px;font-weight:400;font-family:'DM Mono',monospace;font-size:10px}
+.mat-table td{padding:4px 4px;border-top:1px solid var(--border);color:var(--text2)}
+.mat-table td:first-child{color:var(--text)}
+.mat-table td:last-child{text-align:right;font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)}
+
+/* ── Loader / Error ── */
+.loader{padding:3rem;text-align:center;color:var(--text3)}
+.spin{display:inline-block;width:18px;height:18px;border:2px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.err-box{padding:2rem;text-align:center;background:var(--bg2);border:1px solid rgba(239,68,68,.2);border-radius:12px}
+.err-title{color:var(--red);font-size:14px;font-weight:500;margin-bottom:8px}
+.err-msg{font-size:12px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:8px}
+
+/* ── Setup banner ── */
+.setup-banner{background:var(--bg2);border:1px solid rgba(245,158,11,.3);border-radius:12px;padding:1.5rem 2rem;margin-bottom:1.5rem}
+.setup-banner h2{font-size:15px;font-weight:500;color:var(--amber);margin-bottom:10px}
+.setup-banner ol{padding-left:1.2rem;color:var(--text2);font-size:13px;line-height:2}
+.setup-banner code{font-family:'DM Mono',monospace;background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:12px;color:var(--text)}
+.url-input{width:100%;font-family:'DM Mono',monospace;font-size:12px;padding:8px 12px;border-radius:7px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);outline:none;margin-top:8px}
+.url-input:focus{border-color:var(--blue)}
+.save-btn{margin-top:10px;font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 18px;border-radius:8px;border:none;background:var(--blue);color:#fff;cursor:pointer;font-weight:500}
+.save-btn:hover{opacity:.85}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="header">
+    <div>
+      <div class="brand">
+        <div class="brand-dot" id="brand-dot"></div>
+        <div class="brand-name">Production Floor</div>
+      </div>
+      <div class="sync-line" id="sync-line">Not connected</div>
+    </div>
+    <div class="header-right">
+      <input class="search" type="text" placeholder="Search project / code..." id="search-box" oninput="applyFilters()">
+      <button class="btn" onclick="loadData()">&#8635; Refresh</button>
+    </div>
+  </div>
+
+  
+  <div class="stats" id="stats-row"></div>
+  <div class="filter-row">
+    <button class="fbtn on"        onclick="setFilter('all',this,'on')">All live</button>
+    <button class="fbtn"           onclick="setFilter('wip',this,'on')">WIP</button>
+    <button class="fbtn"           onclick="setFilter('hold',this,'on-amber')">On hold</button>
+    <button class="fbtn"           onclick="setFilter('completed',this,'on-green')">Completed</button>
+  </div>
+  <div id="main-area"></div>
+
+</div>
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbz_suji7p0oLb7ds5IrljI0N13VAIe3UFbkxlq1zXdWFPprqYvLRNwC1kam45zKG7LA/exec';
+let allProjects = [];
+let activeFilter = 'all';
+let expandedId = null;
+
+function tr(s){ return (s||'').trim(); }
+
+function fillColor(pct){
+  if(pct>=99) return '#22c55e';
+  if(pct>=70) return '#3b82f6';
+  if(pct>=60) return '#f59e0b';
+  return '#6366f1';
+}
+
+function timeSince(iso){
+  if(!iso) return null;
+  const diff = Date.now() - new Date(iso).getTime();
+  const h = Math.floor(diff/3600000);
+  if(h < 1)  return 'activity < 1h ago';
+  if(h < 24) return `activity ${h}h ago`;
+  const d = Math.floor(h/24);
+  return `activity ${d}d ago`;
+}
+
+
+async function loadData(){
+  document.getElementById('main-area').innerHTML = '<div class="loader"><span class="spin"></span>Loading live production data...</div>';
+  document.getElementById('brand-dot').style.background = '#f59e0b';
+  document.getElementById('sync-line').textContent = 'Syncing...';
+  try {
+    const res = await fetch(API_URL);
+    const data = await res.json();
+    if(data.error) throw new Error(data.error);
+    allProjects = data.projects || [];
+    const now = new Date(data.generatedAt);
+    document.getElementById('brand-dot').style.background = '#22c55e';
+    document.getElementById('sync-line').textContent = `Synced ${now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})} · ${allProjects.length} projects`;
+    applyFilters();
+  } catch(e) {
+    document.getElementById('brand-dot').style.background = '#ef4444';
+    document.getElementById('sync-line').textContent = 'Failed to sync';
+    document.getElementById('main-area').innerHTML = `<div class="err-box">
+      <div class="err-title">Could not load data</div>
+      <p style="font-size:12px;color:var(--text2)">Check your Apps Script URL and ensure the deployment is set to <strong>Anyone can access</strong>.</p>
+      <div class="err-msg">${e.message}</div>
+      <button class="save-btn" style="margin-top:14px;background:var(--bg4);color:var(--text2);border:1px solid var(--border2)" onclick="renderSetupBanner(true);document.getElementById('setup-area').scrollIntoView()">Edit URL</button>
+    </div>`;
+  }
+}
+
+function setFilter(f, btn, cls){
+  activeFilter = f;
+  document.querySelectorAll('.fbtn').forEach(b => b.classList.remove('on','on-amber','on-green','on-purple'));
+  btn.classList.add(cls);
+  applyFilters();
+}
+
+function applyFilters(){
+  const q = (document.getElementById('search-box').value||'').toLowerCase();
+  let list = allProjects;
+  if(activeFilter === 'all') list = list.filter(p => p.status !== 'completed');
+  else list = list.filter(p => p.status === activeFilter);
+  if(q) list = list.filter(p => p.name.toLowerCase().includes(q) || p.code.toLowerCase().includes(q));
+  renderStats();
+  renderGrid(list);
+}
+
+function renderStats(){
+  const all = allProjects;
+  document.getElementById('stats-row').innerHTML = [
+    {label:'Live projects', val: all.filter(p=>p.status!=='completed').length, cls:'c-blue'},
+    {label:'WIP',           val: all.filter(p=>p.status==='wip').length,       cls:'c-blue'},
+    {label:'On hold',       val: all.filter(p=>p.status==='hold').length,       cls:'c-amber'},
+    {label:'Completed',     val: all.filter(p=>p.status==='completed').length,  cls:'c-green'},
+    {label:'Total products',val: all.reduce((s,p)=>s+p.products.length,0),     cls:''},
+  ].map(s=>`<div class="stat"><div class="stat-label">${s.label}</div><div class="stat-val ${s.cls}">${s.val}</div></div>`).join('');
+}
+
+function toggleCard(id){ expandedId = expandedId===id?null:id; applyFilters(); }
+
+function renderGrid(list){
+  if(!list.length){
+    document.getElementById('main-area').innerHTML='<div class="loader" style="color:var(--text3)">No projects match.</div>';
+    return;
+  }
+  const today = new Date();
+  document.getElementById('main-area').innerHTML = `<div class="grid">${list.map(proj => {
+    const expanded = expandedId === proj.id;
+    const bCls = {wip:'b-wip',hold:'b-hold',completed:'b-done'}[proj.status]||'b-wip';
+    const bLbl = {wip:'WIP',hold:'ON HOLD',completed:'DISPATCHED'}[proj.status]||'WIP';
+    const fc = fillColor(proj.overallPct);
+
+    // Deadline
+    let dlHtml = '';
+    if(proj.deadlineParsed){
+      const dl = new Date(proj.deadlineParsed);
+      const diff = Math.ceil((dl-today)/864e5);
+      const cls = diff<0?'dl-late':diff<=7?'dl-soon':'dl-ok';
+      const txt = diff<0?`${Math.abs(diff)}d overdue`:diff===0?'Due today':`${diff}d left`;
+      dlHtml = `<span class="deadline ${cls}">&#128197; ${proj.deadline} · ${txt}</span>`;
+    }
+
+    // Last activity
+    const actStr = timeSince(proj.lastActivity);
+    const isStale = proj.status === 'hold';
+    const actHtml = actStr ? `<span class="activity-tag${isStale?' stale':''}">&#9679; ${actStr}</span>` : '';
+
+    let prodsHtml = '';
+    if(expanded){
+      prodsHtml = `<div class="products-wrap">
+        <div class="sec-label">${proj.products.length} product${proj.products.length!==1?'s':''}</div>
+        ${proj.products.map(p => {
+          const chips = p.deptSet.map(d => {
+            const isCur = d === p.currentDept && !p.isDispatched;
+            const isDone = !isCur && p.deptSet.indexOf(d) < p.deptSet.indexOf(p.currentDept);
+            return `<span class="chip${isCur?' cur':isDone?' done-chip':''}">${d}</span>`;
+          }).join('') || `<span class="chip cur">${p.currentDept||'Not started'}</span>`;
+
+          const matByDept = {};
+          (p.recentMat||[]).forEach(m => {
+            if(!matByDept[m.dept]) matByDept[m.dept]=[];
+            matByDept[m.dept].push(m);
+          });
+
+          const matHtml = Object.entries(matByDept).slice(0,5).map(([dept,items])=>`
+            <div class="mat-dept-block">
+              <div class="mat-dept-lbl">${dept}</div>
+              <table class="mat-table">
+                <thead><tr><th>Material</th><th>Qty</th><th>Receiver</th></tr></thead>
+                <tbody>${items.slice(0,6).map(m=>`
+                  <tr>
+                    <td>${m.material}${m.spec?` <span style="color:var(--text3);font-size:10px">${m.spec}</span>`:''}</td>
+                    <td>${m.qty} ${m.uom}</td>
+                    <td>${m.receiver}</td>
+                  </tr>`).join('')}
+                </tbody>
+              </table>
+            </div>`).join('');
+
+          const pActStr = timeSince(p.latestActivityDate);
+          const pStale = p.latestActivityDate && (Date.now()-new Date(p.latestActivityDate).getTime()) > 72*3600000;
+
+          return `<div class="prod">
+            <div class="prod-head">
+              <div>
+                <div class="prod-name">${p.name||p.code}</div>
+                <div class="prod-code">${p.code}${p.qty?' · Qty: '+p.qty:''}</div>
+              </div>
+              <div class="prod-pct">${p.pct}%</div>
+            </div>
+            <div class="prod-track"><div class="prod-fill" style="width:${p.pct}%;background:${fillColor(p.pct)}"></div></div>
+            <div class="dep-chips">${chips}</div>
+            ${pActStr?`<div class="prod-activity${pStale?' stale':''}">${pActStr}</div>`:''}
+            ${matHtml}
+          </div>`;
+        }).join('')}
+      </div>`;
+    }
+
+    return `<div class="card${expanded?' open':''}" onclick="toggleCard('${proj.id}')">
+      <div class="card-top">
+        <div class="card-head">
+          <div>
+            <div class="proj-name">${proj.name||proj.code}</div>
+            <div class="proj-meta">${proj.code} · ${proj.products.length} product${proj.products.length!==1?'s':''}</div>
+          </div>
+          <span class="badge ${bCls}">${bLbl}</span>
+        </div>
+        <div class="prog-area">
+          <div class="prog-lbl"><span>Progress</span><span class="prog-pct">${proj.overallPct}%</span></div>
+          <div class="track"><div class="fill" style="width:${proj.overallPct}%;background:${fc}"></div></div>
+        </div>
+        <div class="tags-row">
+          ${proj.overallDept?`<span class="dept-tag"><span class="dept-dot"></span>${proj.overallDept}</span>`:''}
+          ${dlHtml}
+          ${actHtml}
+        </div>
+        <div class="expand-hint">${expanded?'&#9650;':'&#9660;'} ${expanded?'Collapse':'View products & materials'}</div>
+      </div>
+      ${prodsHtml}
+    </div>`;
+  }).join('')}</div>`;
+}
+
+// Init
+loadData();
+</script>
+</body>
+</html>
