@@ -352,7 +352,11 @@ function renderStats(){
   ].map(s=>`<div class="stat"><div class="stat-label">${s.label}</div><div class="stat-val ${s.cls}">${s.val}</div></div>`).join('');
 }
 
-function toggleCard(id){ expandedId = expandedId===id?null:id; applyFilters(); }
+function toggleCard(id){
+  expandedId = expandedId===id ? null : id;
+  window.location.hash = expandedId ? expandedId : '';
+  applyFilters();
+}
 
 function renderGrid(list){
   if(!list.length){
@@ -458,6 +462,9 @@ function renderGrid(list){
 
 // Init
 loadData(false);
+if(window.location.hash){
+  expandedId = window.location.hash.replace('#','');
+}
 scheduleRefresh();
 </script>
 </body>
