@@ -189,6 +189,7 @@ const REFRESH_INTERVAL = 300000; // 5 minutes
 let allProjects = [];
 let activeFilter = 'all';
 let expandedId = null;
+let expandedProdId = null;
 let sortMode = 'latestActivity';
 let isFirstLoad = true;
 let isFetching = false;
@@ -358,6 +359,12 @@ function toggleCard(id){
   applyFilters();
 }
 
+function toggleProd(id, e){
+  e.stopPropagation();
+  expandedProdId = expandedProdId === id ? null : id;
+  applyFilters();
+}
+
 function renderGrid(list){
   if(!list.length){
     document.getElementById('main-area').innerHTML='<div class="loader" style="color:var(--text3)">No projects match.</div>';
@@ -434,7 +441,10 @@ function renderGrid(list){
             <div class="prod-track"><div class="prod-fill" style="width:${p.pct}%;background:${fillColor(p.pct)}"></div></div>
             <div class="dep-chips">${chips}</div>
             ${pActStr?`<div class="prod-activity${pStale?' stale':''}">${pActStr}</div>`:''}
-            ${matHtml}
+            <div class="expand-hint" onclick="toggleProd('${p.code}', event)" style="margin-top:6px;font-size:11px">
+  ${expandedProdId===p.code ? '▲ Hide materials' : '▼ View materials'}
+</div>
+${expandedProdId===p.code ? matHtml : ''}
           </div>`;
         }).join('')}
       </div>`;
