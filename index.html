@@ -387,7 +387,12 @@ function renderGrid(list){
     if(expanded){
       prodsHtml = `<div class="products-wrap">
         <div class="sec-label">${proj.products.length} product${proj.products.length!==1?'s':''}</div>
-        ${proj.products.map(p => {
+        ${[...proj.products].sort((a,b) => {
+  if(!a.latestActivityDate && !b.latestActivityDate) return 0;
+  if(!a.latestActivityDate) return 1;
+  if(!b.latestActivityDate) return -1;
+  return new Date(b.latestActivityDate) - new Date(a.latestActivityDate);
+}).map(p => {
           const chips = p.deptSet.map(d => {
             const isCur = d === p.currentDept && !p.isDispatched;
             const isDone = !isCur && p.deptSet.indexOf(d) < p.deptSet.indexOf(p.currentDept);
