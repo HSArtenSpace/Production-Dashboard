@@ -153,10 +153,33 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   
   <div class="stats" id="stats-row"></div>
   <div class="filter-row">
-    <button class="fbtn on"        onclick="setFilter('all',this,'on')">All live</button>
-    <button class="fbtn"           onclick="setFilter('wip',this,'on')">WIP</button>
-    <button class="fbtn"           onclick="setFilter('hold',this,'on-amber')">On hold</button>
-    <button class="fbtn"           onclick="setFilter('completed',this,'on-green')">Completed</button>
+
+  <button class="fbtn on" onclick="setFilter('all',this,'on')">All live</button>
+  <button class="fbtn" onclick="setFilter('wip',this,'on')">WIP</button>
+  <button class="fbtn" onclick="setFilter('hold',this,'on-amber')">On hold</button>
+  <button class="fbtn" onclick="setFilter('completed',this,'on-green')">Completed</button>
+
+  <div style="margin-left:auto">
+    <select id="sort-select"
+      onchange="changeSort(this.value)"
+      style="
+        background:var(--bg3);
+        color:var(--text2);
+        border:1px solid var(--border);
+        border-radius:999px;
+        padding:5px 14px;
+        font-size:12px;
+        outline:none;
+        cursor:pointer;
+      ">
+      <option value="latestActivity">Latest Activity</option>
+      <option value="oldestActivity">Oldest Activity</option>
+      <option value="highestProgress">Highest Progress</option>
+      <option value="lowestProgress">Lowest Progress</option>
+    </select>
+  </div>
+
+</div>
   </div>
   <div id="main-area"></div>
 
@@ -166,6 +189,7 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbz_suji7p0oLb7ds5IrljI0
 let allProjects = [];
 let activeFilter = 'all';
 let expandedId = null;
+  let sortMode = 'latestActivity';
 
 function tr(s){ return (s||'').trim(); }
 
@@ -219,12 +243,38 @@ function setFilter(f, btn, cls){
   applyFilters();
 }
 
+function changeSort(mode){
+  sortMode = mode;
+  applyFilters();
+}
 function applyFilters(){
+  
   const q = (document.getElementById('search-box').value||'').toLowerCase();
   let list = allProjects;
   if(activeFilter === 'all') list = list.filter(p => p.status !== 'completed');
   else list = list.filter(p => p.status === activeFilter);
   if(q) list = list.filter(p => p.name.toLowerCase().includes(q) || p.code.toLowerCase().includes(q));
+  // Sorting
+list.sort((a,b) => {
+
+  if(sortMode === 'latestActivity'){
+    return new Date(b.lastActivity || 0) - new Date(a.lastActivity || 0);
+  }
+
+  if(sortMode === 'oldestActivity'){
+    return new Date(a.lastActivity || 0) - new Date(b.lastActivity || 0);
+  }
+
+  if(sortMode === 'highestProgress'){
+    return b.overallPct - a.overallPct;
+  }
+
+  if(sortMode === 'lowestProgress'){
+    return a.overallPct - b.overallPct;
+  }
+
+  return 0;
+});
   renderStats();
   renderGrid(list);
 }
@@ -348,6 +398,10 @@ function renderGrid(list){
 
 // Init
 loadData();
+// Auto refresh every 15 seconds
+setInterval(() => {
+  loadData();
+}, 15000);
 </script>
 </body>
 </html>
