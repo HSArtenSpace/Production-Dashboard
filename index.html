@@ -75,6 +75,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .b-wip   {background:var(--blue-dim);  color:var(--blue);  border:1px solid rgba(59,130,246,.2)}
 .b-hold  {background:var(--amber-dim); color:var(--amber); border:1px solid rgba(245,158,11,.2)}
 .b-done  {background:var(--green-dim); color:var(--green); border:1px solid rgba(34,197,94,.2)}
+.b-ns    {background:var(--purple-dim); color:var(--purple); border:1px solid rgba(168,85,247,.2)}
+.b-ns    {background:var(--purple-dim); color:var(--purple); border:1px solid rgba(168,85,247,.2)}
 
 /* ── Progress ── */
 .prog-area{margin:9px 0 7px}
@@ -159,7 +161,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   <div class="stats" id="stats-row"></div>
 
   <div class="filter-row">
-    <button class="fbtn on"     id="fbtn-all"       onclick="setFilter('all',this,'on')">All live</button>
+    <button class="fbtn on"     id="fbtn-all"           onclick="setFilter('all',this,'on')">All live</button>
+    <button class="fbtn"        id="fbtn-not-started"   onclick="setFilter('not_started',this,'on-purple')">Not started</button>
     <button class="fbtn"        id="fbtn-wip"        onclick="setFilter('wip',this,'on')">WIP</button>
     <button class="fbtn"        id="fbtn-hold"       onclick="setFilter('hold',this,'on-amber')">On hold</button>
     <button class="fbtn"        id="fbtn-completed"  onclick="setFilter('completed',this,'on-green')">Completed</button>
@@ -309,7 +312,8 @@ function changeSort(mode){
 function applyFilters(){
   const q = (document.getElementById('search-box').value||'').toLowerCase();
   let list = allProjects;
-  if(activeFilter === 'all') list = list.filter(p => p.status !== 'completed');
+  if(activeFilter === 'all') list = list.filter(p => p.status !== 'completed' && p.status !== 'not_started');
+  else if(activeFilter === 'not_started') list = list.filter(p => p.status === 'not_started');
   else list = list.filter(p => p.status === activeFilter);
   if(q) list = list.filter(p => p.name.toLowerCase().includes(q) || p.code.toLowerCase().includes(q));
 
@@ -339,7 +343,9 @@ function applyFilters(){
 function renderStats(){
   const all = allProjects;
   document.getElementById('stats-row').innerHTML = [
-    {label:'Live projects', val: all.filter(p=>p.status!=='completed').length, cls:'c-blue'},
+    {label:'Not started', val: all.filter(p=>p.status==='not_started').length, cls:'c-purple'},
+    {label:'Not started', val: all.filter(p=>p.status==='not_started').length, cls:'c-purple'},
+    {label:'Live projects', val: all.filter(p=>p.status!=='completed' && p.status!=='not_started').length, cls:'c-blue'},
     {label:'WIP',           val: all.filter(p=>p.status==='wip').length,       cls:'c-blue'},
     {label:'On hold',       val: all.filter(p=>p.status==='hold').length,       cls:'c-amber'},
     {label:'Completed',     val: all.filter(p=>p.status==='completed').length,  cls:'c-green'},
@@ -357,8 +363,8 @@ function renderGrid(list){
   const today = new Date();
   document.getElementById('main-area').innerHTML = `<div class="grid">${list.map(proj => {
     const expanded = expandedId === proj.id;
-    const bCls = {wip:'b-wip',hold:'b-hold',completed:'b-done'}[proj.status]||'b-wip';
-    const bLbl = {wip:'WIP',hold:'ON HOLD',completed:'DISPATCHED'}[proj.status]||'WIP';
+    const bCls = {wip:'b-wip',hold:'b-hold',completed:'b-done',not_started:'b-ns'}[proj.status]||'b-wip';
+    const bLbl = {wip:'WIP',hold:'ON HOLD',completed:'DISPATCHED',not_started:'NOT STARTED'}[proj.status]||'WIP';
     const fc = fillColor(proj.overallPct);
 
     let dlHtml = '';
