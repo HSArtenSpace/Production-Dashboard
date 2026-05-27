@@ -6,9 +6,6 @@
 <title>Production Floor Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-/* ── PASTE YOUR APPS SCRIPT WEB APP URL BELOW ── */
-/* Find it in: Apps Script → Deploy → Manage Deployments → copy Web App URL */
-
 :root{
   --bg:#0f0f0f;--bg2:#161616;--bg3:#1e1e1e;--bg4:#252525;
   --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);
@@ -28,13 +25,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .brand{display:flex;align-items:center;gap:10px;margin-bottom:4px}
 .brand-dot{width:8px;height:8px;border-radius:50%;background:var(--text3);transition:background .4s}
 .brand-name{font-size:20px;font-weight:600;letter-spacing:-.4px}
-.sync-line{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace}
+.sync-line{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;display:flex;align-items:center;gap:6px}
 .header-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .search{font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 13px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);width:210px;outline:none}
 .search:focus{border-color:var(--blue)}
 .search::placeholder{color:var(--text3)}
 .btn{font-family:'DM Sans',sans-serif;font-size:12px;padding:7px 13px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;transition:all .2s;white-space:nowrap}
 .btn:hover{background:var(--bg4);color:var(--text)}
+
+/* ── Countdown ring ── */
+.refresh-ring{position:relative;width:18px;height:18px;flex-shrink:0}
+.refresh-ring svg{transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:var(--border2);stroke-width:2.5}
+.ring-fill{fill:none;stroke:var(--blue);stroke-width:2.5;stroke-linecap:round;transition:stroke-dashoffset .9s linear;stroke-dasharray:44;stroke-dashoffset:44}
 
 /* ── Stats ── */
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:22px}
@@ -44,13 +47,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .c-blue{color:var(--blue)}.c-amber{color:var(--amber)}.c-green{color:var(--green)}.c-red{color:var(--red)}
 
 /* ── Filters ── */
-.filter-row{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap}
+.filter-row{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;align-items:center}
 .fbtn{font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 14px;border-radius:999px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;transition:all .15s}
 .fbtn:hover{color:var(--text);border-color:var(--border2)}
 .fbtn.on{background:var(--blue);border-color:var(--blue);color:#fff}
 .fbtn.on-amber{background:var(--amber);border-color:var(--amber);color:#000}
 .fbtn.on-green{background:var(--green);border-color:var(--green);color:#000}
 .fbtn.on-purple{background:var(--purple);border-color:var(--purple);color:#fff}
+
+/* ── Sort select ── */
+.sort-wrap{margin-left:auto}
+.sort-select{background:var(--bg3);color:var(--text2);border:1px solid var(--border);border-radius:999px;padding:5px 14px;font-size:12px;outline:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:border-color .15s}
+.sort-select:hover{border-color:var(--border2);color:var(--text)}
 
 /* ── Grid ── */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:12px}
@@ -121,16 +129,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .err-box{padding:2rem;text-align:center;background:var(--bg2);border:1px solid rgba(239,68,68,.2);border-radius:12px}
 .err-title{color:var(--red);font-size:14px;font-weight:500;margin-bottom:8px}
 .err-msg{font-size:12px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:8px}
-
-/* ── Setup banner ── */
-.setup-banner{background:var(--bg2);border:1px solid rgba(245,158,11,.3);border-radius:12px;padding:1.5rem 2rem;margin-bottom:1.5rem}
-.setup-banner h2{font-size:15px;font-weight:500;color:var(--amber);margin-bottom:10px}
-.setup-banner ol{padding-left:1.2rem;color:var(--text2);font-size:13px;line-height:2}
-.setup-banner code{font-family:'DM Mono',monospace;background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:12px;color:var(--text)}
-.url-input{width:100%;font-family:'DM Mono',monospace;font-size:12px;padding:8px 12px;border-radius:7px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);outline:none;margin-top:8px}
-.url-input:focus{border-color:var(--blue)}
-.save-btn{margin-top:10px;font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 18px;border-radius:8px;border:none;background:var(--blue);color:#fff;cursor:pointer;font-weight:500}
-.save-btn:hover{opacity:.85}
 </style>
 </head>
 <body>
@@ -142,54 +140,57 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
         <div class="brand-dot" id="brand-dot"></div>
         <div class="brand-name">Production Floor</div>
       </div>
-      <div class="sync-line" id="sync-line">Not connected</div>
+      <div class="sync-line" id="sync-line">
+        <span id="sync-text">Not connected</span>
+        <div class="refresh-ring" id="refresh-ring" style="display:none" title="Auto-refreshing every 30s">
+          <svg width="18" height="18" viewBox="0 0 18 18">
+            <circle class="ring-bg" cx="9" cy="9" r="7"/>
+            <circle class="ring-fill" id="ring-fill" cx="9" cy="9" r="7"/>
+          </svg>
+        </div>
+      </div>
     </div>
     <div class="header-right">
       <input class="search" type="text" placeholder="Search project / code..." id="search-box" oninput="applyFilters()">
-      <button class="btn" onclick="loadData()">&#8635; Refresh</button>
+      <button class="btn" onclick="manualRefresh()">&#8635; Refresh</button>
     </div>
   </div>
 
-  
   <div class="stats" id="stats-row"></div>
+
   <div class="filter-row">
+    <button class="fbtn on"     id="fbtn-all"       onclick="setFilter('all',this,'on')">All live</button>
+    <button class="fbtn"        id="fbtn-wip"        onclick="setFilter('wip',this,'on')">WIP</button>
+    <button class="fbtn"        id="fbtn-hold"       onclick="setFilter('hold',this,'on-amber')">On hold</button>
+    <button class="fbtn"        id="fbtn-completed"  onclick="setFilter('completed',this,'on-green')">Completed</button>
 
-  <button class="fbtn on" onclick="setFilter('all',this,'on')">All live</button>
-  <button class="fbtn" onclick="setFilter('wip',this,'on')">WIP</button>
-  <button class="fbtn" onclick="setFilter('hold',this,'on-amber')">On hold</button>
-  <button class="fbtn" onclick="setFilter('completed',this,'on-green')">Completed</button>
-
-  <div style="margin-left:auto">
-    <select id="sort-select"
-      onchange="changeSort(this.value)"
-      style="
-        background:var(--bg3);
-        color:var(--text2);
-        border:1px solid var(--border);
-        border-radius:999px;
-        padding:5px 14px;
-        font-size:12px;
-        outline:none;
-        cursor:pointer;
-      ">
-      <option value="latestActivity">Latest Activity</option>
-      <option value="oldestActivity">Oldest Activity</option>
-      <option value="highestProgress">Highest Progress</option>
-      <option value="lowestProgress">Lowest Progress</option>
-    </select>
+    <div class="sort-wrap">
+      <select class="sort-select" id="sort-select" onchange="changeSort(this.value)">
+        <option value="latestActivity">Latest Activity</option>
+        <option value="oldestActivity">Oldest Activity</option>
+        <option value="highestProgress">Highest Progress</option>
+        <option value="lowestProgress">Lowest Progress</option>
+        <option value="newestProject">Newest Project</option>
+        <option value="oldestProject">Oldest Project</option>
+      </select>
+    </div>
   </div>
 
-</div>
-  </div>
   <div id="main-area"></div>
 
 </div>
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbz_suji7p0oLb7ds5IrljI0N13VAIe3UFbkxlq1zXdWFPprqYvLRNwC1kam45zKG7LA/exec';
+const REFRESH_INTERVAL = 30000; // 30 seconds
+
 let allProjects = [];
 let activeFilter = 'all';
 let expandedId = null;
-  let sortMode = 'latestActivity';
+let sortMode = 'latestActivity';
+let isFirstLoad = true;
+let isFetching = false;
+let refreshTimer = null;
+let countdownTimer = null;
 
 function tr(s){ return (s||'').trim(); }
 
@@ -210,32 +211,89 @@ function timeSince(iso){
   return `activity ${d}d ago`;
 }
 
+/* ── Countdown ring ── */
+function startCountdown(){
+  stopCountdown();
+  const ring = document.getElementById('ring-fill');
+  if(!ring) return;
+  const circumference = 44;
+  let elapsed = 0;
+  ring.style.strokeDashoffset = circumference;
+  countdownTimer = setInterval(() => {
+    elapsed += 500;
+    const progress = elapsed / REFRESH_INTERVAL;
+    ring.style.strokeDashoffset = circumference - (circumference * progress);
+  }, 500);
+}
 
-async function loadData(){
-  document.getElementById('main-area').innerHTML = '<div class="loader"><span class="spin"></span>Loading live production data...</div>';
+function stopCountdown(){
+  if(countdownTimer){ clearInterval(countdownTimer); countdownTimer = null; }
+  const ring = document.getElementById('ring-fill');
+  if(ring) ring.style.strokeDashoffset = 44;
+}
+
+/* ── Data loading ── */
+async function loadData(silent = false){
+  if(isFetching) return;
+  isFetching = true;
+
+  // Only show full spinner on first load; silent refresh otherwise
+  if(!silent && isFirstLoad){
+    document.getElementById('main-area').innerHTML = '<div class="loader"><span class="spin"></span>Loading live production data...</div>';
+  }
+
   document.getElementById('brand-dot').style.background = '#f59e0b';
-  document.getElementById('sync-line').textContent = 'Syncing...';
+  document.getElementById('sync-text').textContent = 'Syncing...';
+
   try {
-    const res = await fetch(API_URL);
+    const res = await fetch(API_URL + '?t=' + Date.now()); // cache-bust
     const data = await res.json();
     if(data.error) throw new Error(data.error);
+
     allProjects = data.projects || [];
     const now = new Date(data.generatedAt);
     document.getElementById('brand-dot').style.background = '#22c55e';
-    document.getElementById('sync-line').textContent = `Synced ${now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})} · ${allProjects.length} projects`;
+    document.getElementById('sync-text').textContent = `Synced ${now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})} · ${allProjects.length} projects`;
+    document.getElementById('refresh-ring').style.display = 'flex';
+
+    // Preserve scroll + expanded state on silent refresh
+    const scrollY = silent ? window.scrollY : 0;
     applyFilters();
+    if(silent && scrollY) window.scrollTo({top: scrollY, behavior: 'instant'});
+
+    isFirstLoad = false;
   } catch(e) {
     document.getElementById('brand-dot').style.background = '#ef4444';
-    document.getElementById('sync-line').textContent = 'Failed to sync';
-    document.getElementById('main-area').innerHTML = `<div class="err-box">
-      <div class="err-title">Could not load data</div>
-      <p style="font-size:12px;color:var(--text2)">Check your Apps Script URL and ensure the deployment is set to <strong>Anyone can access</strong>.</p>
-      <div class="err-msg">${e.message}</div>
-      <button class="save-btn" style="margin-top:14px;background:var(--bg4);color:var(--text2);border:1px solid var(--border2)" onclick="renderSetupBanner(true);document.getElementById('setup-area').scrollIntoView()">Edit URL</button>
-    </div>`;
+    document.getElementById('sync-text').textContent = 'Failed to sync';
+    if(isFirstLoad){
+      document.getElementById('main-area').innerHTML = `<div class="err-box">
+        <div class="err-title">Could not load data</div>
+        <p style="font-size:12px;color:var(--text2)">Check your Apps Script URL and ensure the deployment is set to <strong>Anyone can access</strong>.</p>
+        <div class="err-msg">${e.message}</div>
+      </div>`;
+    }
+  } finally {
+    isFetching = false;
   }
 }
 
+function manualRefresh(){
+  stopCountdown();
+  clearInterval(refreshTimer);
+  loadData(false);
+  scheduleRefresh();
+}
+
+function scheduleRefresh(){
+  clearInterval(refreshTimer);
+  startCountdown();
+  refreshTimer = setInterval(() => {
+    loadData(true);
+    startCountdown();
+  }, REFRESH_INTERVAL);
+}
+
+/* ── Filters & Sort ── */
 function setFilter(f, btn, cls){
   activeFilter = f;
   document.querySelectorAll('.fbtn').forEach(b => b.classList.remove('on','on-amber','on-green','on-purple'));
@@ -247,34 +305,33 @@ function changeSort(mode){
   sortMode = mode;
   applyFilters();
 }
+
 function applyFilters(){
-  
   const q = (document.getElementById('search-box').value||'').toLowerCase();
   let list = allProjects;
   if(activeFilter === 'all') list = list.filter(p => p.status !== 'completed');
   else list = list.filter(p => p.status === activeFilter);
   if(q) list = list.filter(p => p.name.toLowerCase().includes(q) || p.code.toLowerCase().includes(q));
-  // Sorting
-list.sort((a,b) => {
 
-  if(sortMode === 'latestActivity'){
-    return new Date(b.lastActivity || 0) - new Date(a.lastActivity || 0);
-  }
+  list.sort((a,b) => {
+    if(sortMode === 'latestActivity')  return new Date(b.lastActivity||0) - new Date(a.lastActivity||0);
+    if(sortMode === 'oldestActivity')  return new Date(a.lastActivity||0) - new Date(b.lastActivity||0);
+    if(sortMode === 'highestProgress') return b.overallPct - a.overallPct;
+    if(sortMode === 'lowestProgress')  return a.overallPct - b.overallPct;
+    // Project code typically encodes date: e.g. ARC2425_1134 — sort by numeric suffix
+    if(sortMode === 'newestProject'){
+      const na = parseInt((a.code||'').replace(/\D/g,'')) || 0;
+      const nb = parseInt((b.code||'').replace(/\D/g,'')) || 0;
+      return nb - na;
+    }
+    if(sortMode === 'oldestProject'){
+      const na = parseInt((a.code||'').replace(/\D/g,'')) || 0;
+      const nb = parseInt((b.code||'').replace(/\D/g,'')) || 0;
+      return na - nb;
+    }
+    return 0;
+  });
 
-  if(sortMode === 'oldestActivity'){
-    return new Date(a.lastActivity || 0) - new Date(b.lastActivity || 0);
-  }
-
-  if(sortMode === 'highestProgress'){
-    return b.overallPct - a.overallPct;
-  }
-
-  if(sortMode === 'lowestProgress'){
-    return a.overallPct - b.overallPct;
-  }
-
-  return 0;
-});
   renderStats();
   renderGrid(list);
 }
@@ -304,7 +361,6 @@ function renderGrid(list){
     const bLbl = {wip:'WIP',hold:'ON HOLD',completed:'DISPATCHED'}[proj.status]||'WIP';
     const fc = fillColor(proj.overallPct);
 
-    // Deadline
     let dlHtml = '';
     if(proj.deadlineParsed){
       const dl = new Date(proj.deadlineParsed);
@@ -314,7 +370,6 @@ function renderGrid(list){
       dlHtml = `<span class="deadline ${cls}">&#128197; ${proj.deadline} · ${txt}</span>`;
     }
 
-    // Last activity
     const actStr = timeSince(proj.lastActivity);
     const isStale = proj.status === 'hold';
     const actHtml = actStr ? `<span class="activity-tag${isStale?' stale':''}">&#9679; ${actStr}</span>` : '';
@@ -397,11 +452,8 @@ function renderGrid(list){
 }
 
 // Init
-loadData();
-// Auto refresh every 15 seconds
-setInterval(() => {
-  loadData();
-}, 15000);
+loadData(false);
+scheduleRefresh();
 </script>
 </body>
 </html>
