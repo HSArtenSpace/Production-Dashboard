@@ -344,7 +344,6 @@ function renderStats(){
   const all = allProjects;
   document.getElementById('stats-row').innerHTML = [
     {label:'Not started', val: all.filter(p=>p.status==='not_started').length, cls:'c-purple'},
-    {label:'Not started', val: all.filter(p=>p.status==='not_started').length, cls:'c-purple'},
     {label:'Live projects', val: all.filter(p=>p.status!=='completed' && p.status!=='not_started').length, cls:'c-blue'},
     {label:'WIP',           val: all.filter(p=>p.status==='wip').length,       cls:'c-blue'},
     {label:'On hold',       val: all.filter(p=>p.status==='hold').length,       cls:'c-amber'},
