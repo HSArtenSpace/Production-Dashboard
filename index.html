@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Production Floor Dashboard</title>
+<title>Production Floor · Artenspace</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -15,17 +15,19 @@
   --green:#22c55e;--green-dim:rgba(34,197,94,0.13);
   --red:#ef4444;--red-dim:rgba(239,68,68,0.13);
   --purple:#a855f7;--purple-dim:rgba(168,85,247,0.13);
+  --orange:#f05423;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
 .shell{max-width:1400px;margin:0 auto;padding:28px 24px}
 
 /* ── Header ── */
-.header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px}
-.brand{display:flex;align-items:center;gap:10px;margin-bottom:4px}
-.brand-dot{width:8px;height:8px;border-radius:50%;background:var(--text3);transition:background .4s}
-.brand-name{font-size:20px;font-weight:600;letter-spacing:-.4px}
-.sync-line{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;display:flex;align-items:center;gap:6px}
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.brand-link{display:flex;align-items:center;gap:10px;text-decoration:none;cursor:pointer}
+.brand-logo{height:22px;width:auto;flex-shrink:0}
+.brand-divider{width:1px;height:16px;background:var(--border2);flex-shrink:0}
+.brand-sub{font-size:11px;font-family:'DM Mono',monospace;color:var(--text3);white-space:nowrap;display:flex;align-items:center;gap:6px}
+.conn-dot{width:6px;height:6px;border-radius:50%;background:var(--text3);transition:background .4s;flex-shrink:0}
 .header-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .search{font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 13px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);width:210px;outline:none}
 .search:focus{border-color:var(--blue)}
@@ -34,7 +36,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .btn:hover{background:var(--bg4);color:var(--text)}
 
 /* ── Countdown ring ── */
-.refresh-ring{position:relative;width:18px;height:18px;flex-shrink:0}
+.refresh-ring{width:14px;height:14px;flex-shrink:0}
 .refresh-ring svg{transform:rotate(-90deg)}
 .ring-bg{fill:none;stroke:var(--border2);stroke-width:2.5}
 .ring-fill{fill:none;stroke:var(--blue);stroke-width:2.5;stroke-linecap:round;transition:stroke-dashoffset .9s linear;stroke-dasharray:44;stroke-dashoffset:44}
@@ -44,7 +46,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .stat{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:13px 15px}
 .stat-label{font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em;font-family:'DM Mono',monospace}
 .stat-val{font-size:24px;font-weight:500}
-.c-blue{color:var(--blue)}.c-amber{color:var(--amber)}.c-green{color:var(--green)}.c-red{color:var(--red)}
+.c-blue{color:var(--blue)}.c-amber{color:var(--amber)}.c-green{color:var(--green)}.c-red{color:var(--red)}.c-purple{color:var(--purple)}
 
 /* ── Filters ── */
 .filter-row{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;align-items:center}
@@ -55,9 +57,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .fbtn.on-green{background:var(--green);border-color:var(--green);color:#000}
 .fbtn.on-purple{background:var(--purple);border-color:var(--purple);color:#fff}
 
-/* ── Sort select ── */
+/* ── Sort ── */
 .sort-wrap{margin-left:auto}
-.sort-select{background:var(--bg3);color:var(--text2);border:1px solid var(--border);border-radius:999px;padding:5px 14px;font-size:12px;outline:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:border-color .15s}
+.sort-select{background:var(--bg3);color:var(--text2);border:1px solid var(--border);border-radius:999px;padding:5px 14px;font-size:12px;outline:none;cursor:pointer;font-family:'DM Sans',sans-serif}
 .sort-select:hover{border-color:var(--border2);color:var(--text)}
 
 /* ── Grid ── */
@@ -67,16 +69,20 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:border-color .15s;cursor:pointer}
 .card:hover{border-color:var(--border2)}
 .card.open{border-color:rgba(59,130,246,.35)}
+.card.at-risk{border-color:rgba(239,68,68,.3)}
 .card-top{padding:15px 17px}
 .card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:9px}
 .proj-name{font-size:14px;font-weight:500;line-height:1.3}
 .proj-meta{font-size:11px;color:var(--text3);margin-top:2px;font-family:'DM Mono',monospace}
-.badge{font-size:10px;padding:3px 8px;border-radius:999px;white-space:nowrap;flex-shrink:0;font-family:'DM Mono',monospace;font-weight:500;letter-spacing:.03em}
-.b-wip   {background:var(--blue-dim);  color:var(--blue);  border:1px solid rgba(59,130,246,.2)}
-.b-hold  {background:var(--amber-dim); color:var(--amber); border:1px solid rgba(245,158,11,.2)}
-.b-done  {background:var(--green-dim); color:var(--green); border:1px solid rgba(34,197,94,.2)}
-.b-ns    {background:var(--purple-dim); color:var(--purple); border:1px solid rgba(168,85,247,.2)}
-.b-ns    {background:var(--purple-dim); color:var(--purple); border:1px solid rgba(168,85,247,.2)}
+.card-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.badge{font-size:10px;padding:3px 8px;border-radius:999px;white-space:nowrap;font-family:'DM Mono',monospace;font-weight:500;letter-spacing:.03em}
+.b-wip{background:var(--blue-dim);color:var(--blue);border:1px solid rgba(59,130,246,.2)}
+.b-hold{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(245,158,11,.2)}
+.b-done{background:var(--green-dim);color:var(--green);border:1px solid rgba(34,197,94,.2)}
+.b-ns{background:var(--purple-dim);color:var(--purple);border:1px solid rgba(168,85,247,.2)}
+.b-risk{background:var(--red-dim);color:var(--red);border:1px solid rgba(239,68,68,.2)}
+.open-btn{font-size:10px;padding:3px 8px;border-radius:999px;border:1px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;font-family:'DM Mono',monospace;transition:all .15s;white-space:nowrap;text-decoration:none}
+.open-btn:hover{border-color:var(--blue);color:var(--blue)}
 
 /* ── Progress ── */
 .prog-area{margin:9px 0 7px}
@@ -85,7 +91,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .track{height:4px;background:var(--bg4);border-radius:2px;overflow:hidden}
 .fill{height:100%;border-radius:2px}
 
-/* ── Tags row ── */
+/* ── Tags ── */
 .tags-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:7px}
 .dept-tag{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:2px 9px;border-radius:999px;background:var(--bg4);color:var(--text2);border:1px solid var(--border)}
 .dept-dot{width:5px;height:5px;border-radius:50%;background:var(--blue);flex-shrink:0}
@@ -93,11 +99,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .dl-late{color:var(--red)}.dl-soon{color:var(--amber)}.dl-ok{color:var(--text3)}
 .activity-tag{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace}
 .activity-tag.stale{color:var(--amber)}
+.risk-tag{font-size:11px;font-family:'DM Mono',monospace;color:var(--red)}
 
 /* ── Expand hint ── */
 .expand-hint{font-size:11px;color:var(--text3);margin-top:8px;display:flex;align-items:center;gap:4px}
 
-/* ── Products section ── */
+/* ── Products ── */
 .products-wrap{border-top:1px solid var(--border);padding:13px 17px;background:rgba(0,0,0,.25)}
 .sec-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-family:'DM Mono',monospace;margin-bottom:10px}
 .prod{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px}
@@ -124,6 +131,20 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .mat-table td:first-child{color:var(--text)}
 .mat-table td:last-child{text-align:right;font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)}
 
+/* ── Project page ── */
+.proj-page{display:none}
+.proj-page.active{display:block}
+.dashboard-view{display:block}
+.dashboard-view.hidden{display:none}
+.proj-page-header{background:var(--bg2);border-bottom:1px solid var(--border);padding:18px 24px;margin:-28px -24px 24px}
+.proj-page-title{font-size:18px;font-weight:600;margin-bottom:4px}
+.proj-page-meta{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.proj-page-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:22px}
+.risk-banner{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:10px;padding:12px 16px;margin-bottom:18px;display:flex;align-items:flex-start;gap:10px}
+.risk-banner-icon{font-size:18px;flex-shrink:0}
+.risk-banner-text{font-size:12px;line-height:1.6}
+.risk-banner-title{font-weight:600;color:var(--red);margin-bottom:2px}
+
 /* ── Loader / Error ── */
 .loader{padding:3rem;text-align:center;color:var(--text3)}
 .spin{display:inline-block;width:18px;height:18px;border:2px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px}
@@ -136,55 +157,98 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 <body>
 <div class="shell">
 
+  <!-- ── Single-line header ── -->
   <div class="header">
-    <div>
-      <div class="brand">
-        <div class="brand-dot" id="brand-dot"></div>
-        <div class="brand-name">Production Floor</div>
-      </div>
-      <div class="sync-line" id="sync-line">
+    <a class="brand-link" onclick="goHome()" href="#">
+      <!-- Generator: Adobe Illustrator 25.2.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg class="brand-logo" viewBox="0 0 2260.8 629.4" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+<style type="text/css">
+	.st0{fill:#F05423;}
+</style>
+<g>
+	<g>
+		<path class="st0" d="M1329.1,402.7c126.7,0,253.5,0,381.1,0c0-21,0-41.9,0-63.9c-102.3,0-204.3,0-307,0c0-20.5,0-39.8,0-60.3
+			c79.1,0,158.2,0,237.8,0c0-22,0-42.9,0-64.9c-79.4,0-158.5,0-237.9,0c0-20.4,0-39.8,0-60.2c102.6,0,204.6,0,307.2,0
+			c0-21.9,0-42.9,0-64.8c-127.5,0-253.9,0-381.2,0C1329.1,193.3,1329.1,297.6,1329.1,402.7z"/>
+		<path class="st0" d="M903.9,88.5v65.3c51.5-0.2,103.1-0.1,154.5-0.1c2.1,0,4.2,0.3,7.3,0.5v248.9h0.1h73.5h0.1V154.2
+			c3.1-0.2,5.2-0.5,7.3-0.5c51.5,0,103.1-0.1,154.5,0.1V88.5c-66.3-0.3-132.5,0-198.8,0.1C1036.4,88.5,970.2,88.2,903.9,88.5z"/>
+		<path class="st0" d="M208.2,88.4L94.1,402.7h78.8l101.6-280c4.2-11.6,20.6-11.6,24.8,0l101.6,280h78.8L365.7,88.4H208.2z"/>
+		<path class="st0" d="M685.8,277.1h105.4c52.1,0,94.4-42.3,94.4-94.4s-42.3-94.4-94.4-94.4H506v314.3h74V152.9h201.9
+			c16.4,0,29.8,13.3,29.8,29.8c0,16.4-13.3,29.8-29.8,29.8H680.4c-39,0-70.5,31.6-70.5,70.5c0,32.6,22.3,60.9,54,68.6l194.4,50.4
+			l15.2-62.8l-189.1-49.1C676.7,288.2,678,277.1,685.8,277.1z"/>
+		<path class="st0" d="M2092.7,88.3l0.1,280c-4.2,11.6-20.6,11.6-24.8,0l-55.9-95.3L1903.7,88.3h-0.1h-78.6h-0.1h-0.1h-78.6v314.3
+			h74l-0.1-280c4.2-11.6,20.6-11.6,24.8,0l54.3,92.5l109.9,187.5h0.1h78.6h0.1h0.1h78.6V88.3H2092.7z"/>
+	</g>
+	<g>
+		<path class="st0" d="M1329.1,511.9l14-9.4c7.2,15.7,21,24.3,41.1,24.3s32.5-7.6,32.5-18.6c0-9-6.9-13.9-20.5-14.7l-26.2-1.6
+			c-22.2-1.3-35.9-11-35.9-25.3c0-19.2,17-29.9,47.4-29.9c22.5,0,38.8,6.4,49.5,21.5l-15.3,9.3c-6.2-10.6-17.9-16.5-34.2-16.5
+			c-18.5,0-30.2,5.9-30.2,14c0,6.9,5.7,10,19.5,11l26.8,1.9c24.2,1.7,36.4,11.9,36.4,30.1c0,19.9-19,33.2-50.7,33.2
+			C1355.9,541.1,1339,530.9,1329.1,511.9z"/>
+		<path class="st0" d="M1583.1,438.8c26,0,37.5,10.6,37.5,29.5c0,16.5-11.3,28.5-37.4,28.5h-43.5v42.2h-17.2V438.8H1583.1z
+			 M1539.8,454.5V481h48.1c10.7,0,15.6-6.4,15.6-12.9c0-6.9-5-13.6-15.6-13.6H1539.8z"/>
+		<path class="st0" d="M1757.9,438.8l53.2,100.2h-20l-13.3-25.3h-62.3l-13.3,25.3h-19.3l53.2-100.2H1757.9z M1769.6,497.9
+			l-22.9-43.7l-22.9,43.7H1769.6z"/>
+		<path class="st0" d="M1882.6,488.8c0-28.5,23.3-52.2,58.4-52.2c23.9,0,42.4,11.3,51.7,27.1l-14.5,9.2
+			c-6.3-13.3-19.3-20.5-37.2-20.5c-25.8,0-41.2,15.6-41.2,36.5c0,20.9,15.5,36.5,41.2,36.5c19.9,0,33.6-8.9,38.9-22.9l11.2,14
+			c-9.7,14.3-27.5,24.6-50.1,24.6C1905.9,541.1,1882.6,517.3,1882.6,488.8z"/>
+		<path class="st0" d="M2166.7,438.8l-2.9,15.7h-67.4v20.3h56v15.7h-56v32.6h67.4l2.9,15.7h-87.5V438.8H2166.7z"/>
+	</g>
+</g>
+</svg>
+      <div class="brand-divider"></div>
+      <div class="brand-sub">
+        <span class="conn-dot" id="brand-dot"></span>
         <span id="sync-text">Not connected</span>
-        <div class="refresh-ring" id="refresh-ring" style="display:none" title="Auto-refreshing every 30s">
-          <svg width="18" height="18" viewBox="0 0 18 18">
+        <div class="refresh-ring" id="refresh-ring" style="display:none">
+          <svg width="14" height="14" viewBox="0 0 18 18">
             <circle class="ring-bg" cx="9" cy="9" r="7"/>
             <circle class="ring-fill" id="ring-fill" cx="9" cy="9" r="7"/>
           </svg>
         </div>
       </div>
-    </div>
+    </a>
     <div class="header-right">
       <input class="search" type="text" placeholder="Search project / code..." id="search-box" oninput="applyFilters()">
       <button class="btn" onclick="manualRefresh()">&#8635; Refresh</button>
     </div>
   </div>
 
-  <div class="stats" id="stats-row"></div>
-
-  <div class="filter-row">
-    <button class="fbtn on"     id="fbtn-all"           onclick="setFilter('all',this,'on')">All live</button>
-    <button class="fbtn"        id="fbtn-not-started"   onclick="setFilter('not_started',this,'on-purple')">Not started</button>
-    <button class="fbtn"        id="fbtn-wip"        onclick="setFilter('wip',this,'on')">WIP</button>
-    <button class="fbtn"        id="fbtn-hold"       onclick="setFilter('hold',this,'on-amber')">On hold</button>
-    <button class="fbtn"        id="fbtn-completed"  onclick="setFilter('completed',this,'on-green')">Completed</button>
-
-    <div class="sort-wrap">
-      <select class="sort-select" id="sort-select" onchange="changeSort(this.value)">
-        <option value="latestActivity">Latest Activity</option>
-        <option value="oldestActivity">Oldest Activity</option>
-        <option value="highestProgress">Highest Progress</option>
-        <option value="lowestProgress">Lowest Progress</option>
-        <option value="newestProject">Newest Project</option>
-        <option value="oldestProject">Oldest Project</option>
-      </select>
+  <!-- ── Dashboard view ── -->
+  <div class="dashboard-view" id="dashboard-view">
+    <div class="stats" id="stats-row"></div>
+    <div class="filter-row">
+      <button class="fbtn on" id="fbtn-all"         onclick="setFilter('all',this,'on')">All live</button>
+      <button class="fbtn"    id="fbtn-not-started"  onclick="setFilter('not_started',this,'on-purple')">Not started</button>
+      <button class="fbtn"    id="fbtn-wip"          onclick="setFilter('wip',this,'on')">WIP</button>
+      <button class="fbtn"    id="fbtn-hold"         onclick="setFilter('hold',this,'on-amber')">On hold</button>
+      <button class="fbtn"    id="fbtn-completed"    onclick="setFilter('completed',this,'on-green')">Completed</button>
+      <div class="sort-wrap">
+        <select class="sort-select" id="sort-select" onchange="changeSort(this.value)">
+          <option value="latestActivity">Latest Activity</option>
+          <option value="oldestActivity">Oldest Activity</option>
+          <option value="highestProgress">Highest Progress</option>
+          <option value="lowestProgress">Lowest Progress</option>
+          <option value="newestProject">Newest Project</option>
+          <option value="oldestProject">Oldest Project</option>
+        </select>
+      </div>
     </div>
+    <div id="main-area"></div>
   </div>
 
-  <div id="main-area"></div>
+  <!-- ── Project page view ── -->
+  <div class="proj-page" id="proj-page">
+    <div id="proj-page-content"></div>
+  </div>
 
 </div>
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbz_suji7p0oLb7ds5IrljI0N13VAIe3UFbkxlq1zXdWFPprqYvLRNwC1kam45zKG7LA/exec';
-const REFRESH_INTERVAL = 300000; // 5 minutes
+const REFRESH_INTERVAL = 300000;
+const DISPATCH_DAYS = 60;
+const RISK_DAYS_BEFORE = 14;
+const RISK_PCT_THRESHOLD = 75;
+const BUFFER_DAYS = 14;
 
 let allProjects = [];
 let activeFilter = 'all';
@@ -195,8 +259,49 @@ let isFirstLoad = true;
 let isFetching = false;
 let refreshTimer = null;
 let countdownTimer = null;
+let currentProjectPage = null;
 
-function tr(s){ return (s||'').trim(); }
+// ── Deadline logic ──
+function getDeadlineInfo(proj){
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  // Effective start: sheet start date OR first material date + 7 days
+  let effectiveStart = null;
+  if(proj.sheetStartDate){
+    const d = new Date(proj.sheetStartDate);
+    if(!isNaN(d)) effectiveStart = d;
+  }
+  if(!effectiveStart && proj.firstMaterialDate){
+    const d = new Date(proj.firstMaterialDate);
+    if(!isNaN(d)){ d.setDate(d.getDate()+7); effectiveStart = d; }
+  }
+  if(!effectiveStart) return null;
+
+  const expectedDispatch = new Date(effectiveStart);
+  expectedDispatch.setDate(expectedDispatch.getDate() + DISPATCH_DAYS);
+
+  const riskThreshold = new Date(expectedDispatch);
+  riskThreshold.setDate(riskThreshold.getDate() - RISK_DAYS_BEFORE);
+
+  const daysToDispatch = Math.ceil((expectedDispatch - today) / 864e5);
+  const isAtRisk = today >= riskThreshold && proj.overallPct < RISK_PCT_THRESHOLD && proj.status !== 'completed';
+
+  const projectedDispatch = new Date(expectedDispatch);
+  projectedDispatch.setDate(projectedDispatch.getDate() + BUFFER_DAYS);
+
+  return {
+    effectiveStart,
+    expectedDispatch,
+    daysToDispatch,
+    isAtRisk,
+    projectedDispatch,
+    riskThreshold
+  };
+}
+
+function formatDate(d){
+  return d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+}
 
 function fillColor(pct){
   if(pct>=99) return '#22c55e';
@@ -209,255 +314,262 @@ function timeSince(iso){
   if(!iso) return null;
   const diff = Date.now() - new Date(iso).getTime();
   const h = Math.floor(diff/3600000);
-  if(h < 1)  return 'activity < 1h ago';
-  if(h < 24) return `activity ${h}h ago`;
-  const d = Math.floor(h/24);
-  return `activity ${d}d ago`;
+  if(h<1) return 'activity < 1h ago';
+  if(h<24) return `activity ${h}h ago`;
+  return `activity ${Math.floor(h/24)}d ago`;
 }
 
-/* ── Countdown ring ── */
+// ── Countdown ──
 function startCountdown(){
   stopCountdown();
   const ring = document.getElementById('ring-fill');
   if(!ring) return;
-  const circumference = 44;
   let elapsed = 0;
-  ring.style.strokeDashoffset = circumference;
-  countdownTimer = setInterval(() => {
+  ring.style.strokeDashoffset = 44;
+  countdownTimer = setInterval(()=>{
     elapsed += 500;
-    const progress = elapsed / REFRESH_INTERVAL;
-    ring.style.strokeDashoffset = circumference - (circumference * progress);
+    ring.style.strokeDashoffset = 44 - (44 * elapsed / REFRESH_INTERVAL);
   }, 500);
 }
-
 function stopCountdown(){
-  if(countdownTimer){ clearInterval(countdownTimer); countdownTimer = null; }
+  if(countdownTimer){ clearInterval(countdownTimer); countdownTimer=null; }
   const ring = document.getElementById('ring-fill');
   if(ring) ring.style.strokeDashoffset = 44;
 }
 
-/* ── Data loading ── */
-async function loadData(silent = false){
+// ── Data ──
+async function loadData(silent=false){
   if(isFetching) return;
   isFetching = true;
-
-  // Only show full spinner on first load; silent refresh otherwise
   if(!silent && isFirstLoad){
     document.getElementById('main-area').innerHTML = '<div class="loader"><span class="spin"></span>Loading live production data...</div>';
   }
-
   document.getElementById('brand-dot').style.background = '#f59e0b';
   document.getElementById('sync-text').textContent = 'Syncing...';
-
   try {
-    const res = await fetch(API_URL + '?t=' + Date.now()); // cache-bust
+    const res = await fetch(API_URL + '?t=' + Date.now());
     const data = await res.json();
     if(data.error) throw new Error(data.error);
-
     allProjects = data.projects || [];
     const now = new Date(data.generatedAt);
     document.getElementById('brand-dot').style.background = '#22c55e';
     document.getElementById('sync-text').textContent = `Synced ${now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})} · ${allProjects.length} projects`;
     document.getElementById('refresh-ring').style.display = 'flex';
-
-    // Preserve scroll + expanded state on silent refresh
     const scrollY = silent ? window.scrollY : 0;
-    applyFilters();
-    if(silent && scrollY) window.scrollTo({top: scrollY, behavior: 'instant'});
-
+    if(currentProjectPage){
+      const proj = allProjects.find(p=>p.id===currentProjectPage);
+      if(proj) renderProjectPage(proj);
+    } else {
+      applyFilters();
+      if(silent && scrollY) window.scrollTo({top:scrollY,behavior:'instant'});
+    }
     isFirstLoad = false;
-  } catch(e) {
+  } catch(e){
     document.getElementById('brand-dot').style.background = '#ef4444';
     document.getElementById('sync-text').textContent = 'Failed to sync';
     if(isFirstLoad){
-      document.getElementById('main-area').innerHTML = `<div class="err-box">
-        <div class="err-title">Could not load data</div>
-        <p style="font-size:12px;color:var(--text2)">Check your Apps Script URL and ensure the deployment is set to <strong>Anyone can access</strong>.</p>
-        <div class="err-msg">${e.message}</div>
-      </div>`;
+      document.getElementById('main-area').innerHTML = `<div class="err-box"><div class="err-title">Could not load data</div><div class="err-msg">${e.message}</div></div>`;
     }
-  } finally {
-    isFetching = false;
+  } finally { isFetching = false; }
+}
+
+function manualRefresh(){ stopCountdown(); clearInterval(refreshTimer); loadData(false); scheduleRefresh(); }
+function scheduleRefresh(){
+  clearInterval(refreshTimer); startCountdown();
+  refreshTimer = setInterval(()=>{ loadData(true); startCountdown(); }, REFRESH_INTERVAL);
+}
+
+// ── Navigation ──
+function openProject(projId, e){
+  if(e){ e.stopPropagation(); e.preventDefault(); }
+  // Collapse card on main view
+  if(expandedId === projId){ expandedId = null; applyFilters(); }
+  // Open in new tab
+  const url = location.origin + location.pathname + '#project/' + projId;
+  window.open(url, '_blank');
+}
+
+function goHome(){
+  if(currentProjectPage){
+    currentProjectPage = null;
+    document.getElementById('proj-page').classList.remove('active');
+    document.getElementById('dashboard-view').classList.remove('hidden');
+    document.getElementById('search-box').style.display = '';
+    window.location.hash = '';
+    applyFilters();
   }
 }
 
-function manualRefresh(){
-  stopCountdown();
-  clearInterval(refreshTimer);
-  loadData(false);
-  scheduleRefresh();
+function showProjectPage(projId){
+  const proj = allProjects.find(p=>p.id===projId);
+  if(!proj){ goHome(); return; }
+  currentProjectPage = projId;
+  document.getElementById('dashboard-view').classList.add('hidden');
+  document.getElementById('search-box').style.display = 'none';
+  document.getElementById('proj-page').classList.add('active');
+  renderProjectPage(proj);
 }
 
-function scheduleRefresh(){
-  clearInterval(refreshTimer);
-  startCountdown();
-  refreshTimer = setInterval(() => {
-    loadData(true);
-    startCountdown();
-  }, REFRESH_INTERVAL);
+// ── Filters ──
+function setFilter(f,btn,cls){
+  activeFilter=f;
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on','on-amber','on-green','on-purple'));
+  btn.classList.add(cls); applyFilters();
 }
-
-/* ── Filters & Sort ── */
-function setFilter(f, btn, cls){
-  activeFilter = f;
-  document.querySelectorAll('.fbtn').forEach(b => b.classList.remove('on','on-amber','on-green','on-purple'));
-  btn.classList.add(cls);
-  applyFilters();
-}
-
-function changeSort(mode){
-  sortMode = mode;
-  applyFilters();
-}
-
+function changeSort(mode){ sortMode=mode; applyFilters(); }
 function applyFilters(){
-  const q = (document.getElementById('search-box').value||'').toLowerCase();
-  let list = allProjects;
-  if(activeFilter === 'all') list = list.filter(p => p.status !== 'completed' && p.status !== 'not_started');
-  else if(activeFilter === 'not_started') list = list.filter(p => p.status === 'not_started');
-  else list = list.filter(p => p.status === activeFilter);
-  if(q) list = list.filter(p => p.name.toLowerCase().includes(q) || p.code.toLowerCase().includes(q));
-
-  list.sort((a,b) => {
-    if(sortMode === 'latestActivity')  return new Date(b.lastActivity||0) - new Date(a.lastActivity||0);
-    if(sortMode === 'oldestActivity')  return new Date(a.lastActivity||0) - new Date(b.lastActivity||0);
-    if(sortMode === 'highestProgress') return b.overallPct - a.overallPct;
-    if(sortMode === 'lowestProgress')  return a.overallPct - b.overallPct;
-    // Project code typically encodes date: e.g. ARC2425_1134 — sort by numeric suffix
-    if(sortMode === 'newestProject'){
-      const na = parseInt((a.code||'').replace(/\D/g,'')) || 0;
-      const nb = parseInt((b.code||'').replace(/\D/g,'')) || 0;
-      return nb - na;
-    }
-    if(sortMode === 'oldestProject'){
-      const na = parseInt((a.code||'').replace(/\D/g,'')) || 0;
-      const nb = parseInt((b.code||'').replace(/\D/g,'')) || 0;
-      return na - nb;
-    }
+  if(currentProjectPage) return;
+  const q=(document.getElementById('search-box').value||'').toLowerCase();
+  let list=allProjects;
+  if(activeFilter==='all') list=list.filter(p=>p.status!=='completed'&&p.status!=='not_started');
+  else if(activeFilter==='not_started') list=list.filter(p=>p.status==='not_started');
+  else list=list.filter(p=>p.status===activeFilter);
+  if(q) list=list.filter(p=>p.name.toLowerCase().includes(q)||p.code.toLowerCase().includes(q));
+  list.sort((a,b)=>{
+    if(sortMode==='latestActivity')  return new Date(b.lastActivity||0)-new Date(a.lastActivity||0);
+    if(sortMode==='oldestActivity')  return new Date(a.lastActivity||0)-new Date(b.lastActivity||0);
+    if(sortMode==='highestProgress') return b.overallPct-a.overallPct;
+    if(sortMode==='lowestProgress')  return a.overallPct-b.overallPct;
+    const na=parseInt((a.code||'').replace(/\D/g,''))||0;
+    const nb=parseInt((b.code||'').replace(/\D/g,''))||0;
+    if(sortMode==='newestProject') return nb-na;
+    if(sortMode==='oldestProject') return na-nb;
     return 0;
   });
-
-  renderStats();
-  renderGrid(list);
+  renderStats(); renderGrid(list);
 }
 
 function renderStats(){
-  const all = allProjects;
-  document.getElementById('stats-row').innerHTML = [
-    {label:'Not started', val: all.filter(p=>p.status==='not_started').length, cls:'c-purple'},
-    {label:'Live projects', val: all.filter(p=>p.status!=='completed' && p.status!=='not_started').length, cls:'c-blue'},
-    {label:'WIP',           val: all.filter(p=>p.status==='wip').length,       cls:'c-blue'},
-    {label:'On hold',       val: all.filter(p=>p.status==='hold').length,       cls:'c-amber'},
-    {label:'Completed',     val: all.filter(p=>p.status==='completed').length,  cls:'c-green'},
-    {label:'Total products',val: all.reduce((s,p)=>s+p.products.length,0),     cls:''},
+  const all=allProjects;
+  document.getElementById('stats-row').innerHTML=[
+    {label:'Not started',   val:all.filter(p=>p.status==='not_started').length,                           cls:'c-purple'},
+    {label:'Live projects', val:all.filter(p=>p.status!=='completed'&&p.status!=='not_started').length,   cls:'c-blue'},
+    {label:'WIP',           val:all.filter(p=>p.status==='wip').length,                                   cls:'c-blue'},
+    {label:'On hold',       val:all.filter(p=>p.status==='hold').length,                                  cls:'c-amber'},
+    {label:'Completed',     val:all.filter(p=>p.status==='completed').length,                             cls:'c-green'},
+    {label:'Total products',val:all.reduce((s,p)=>s+p.products.length,0),                                cls:''},
   ].map(s=>`<div class="stat"><div class="stat-label">${s.label}</div><div class="stat-val ${s.cls}">${s.val}</div></div>`).join('');
 }
 
 function toggleCard(id){
-  expandedId = expandedId===id ? null : id;
-  window.location.hash = expandedId ? expandedId : '';
+  expandedId=expandedId===id?null:id;
+  window.location.hash=expandedId?expandedId:'';
   applyFilters();
 }
-
-function toggleProd(id, e){
+function toggleProd(id,e){
   e.stopPropagation();
-  expandedProdId = expandedProdId === id ? null : id;
+  expandedProdId=expandedProdId===id?null:id;
   applyFilters();
 }
 
+// ── Shared product renderer ──
+function renderProduct(p, projId){
+  const chips=p.deptSet.map(d=>{
+    const isCur=d===p.currentDept&&!p.isDispatched;
+    const isDone=!isCur&&p.deptSet.indexOf(d)<p.deptSet.indexOf(p.currentDept);
+    return `<span class="chip${isCur?' cur':isDone?' done-chip':''}">${d}</span>`;
+  }).join('')||`<span class="chip cur">${p.currentDept||'Not started'}</span>`;
+
+  const matByDept={};
+  (p.recentMat||[]).forEach(m=>{
+    if(!matByDept[m.dept]) matByDept[m.dept]=[];
+    matByDept[m.dept].push(m);
+  });
+  const matHtml=Object.entries(matByDept).slice(0,5).map(([dept,items])=>`
+    <div class="mat-dept-block">
+      <div class="mat-dept-lbl">${dept}</div>
+      <table class="mat-table">
+        <thead><tr><th>Material</th><th>Qty</th><th>Receiver</th></tr></thead>
+        <tbody>${items.slice(0,6).map(m=>`
+          <tr>
+            <td>${m.material}${m.spec?` <span style="color:var(--text3);font-size:10px">${m.spec}</span>`:''}</td>
+            <td>${m.qty} ${m.uom}</td>
+            <td>${m.receiver}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`).join('');
+
+  const pActStr=timeSince(p.latestActivityDate);
+  const pStale=p.latestActivityDate&&(Date.now()-new Date(p.latestActivityDate).getTime())>72*3600000;
+  const uid=projId+'__'+p.code;
+
+  return `<div class="prod">
+    <div class="prod-head">
+      <div>
+        <div class="prod-name">${p.name||p.code}</div>
+        <div class="prod-code">${p.code}${p.qty?' · Qty: '+p.qty:''}</div>
+      </div>
+      <div class="prod-pct">${p.pct}%</div>
+    </div>
+    <div class="prod-track"><div class="prod-fill" style="width:${p.pct}%;background:${fillColor(p.pct)}"></div></div>
+    <div class="dep-chips">${chips}</div>
+    ${pActStr?`<div class="prod-activity${pStale?' stale':''}">${pActStr}</div>`:''}
+    <div class="expand-hint" onclick="toggleProd('${uid}',event)" style="margin-top:6px;font-size:11px">
+      ${expandedProdId===uid?'▲ Hide materials':'▼ View materials'}
+    </div>
+    ${expandedProdId===uid?matHtml:''}
+  </div>`;
+}
+
+function sortedProducts(products){
+  return [...products].sort((a,b)=>{
+    if(!a.latestActivityDate&&!b.latestActivityDate) return 0;
+    if(!a.latestActivityDate) return 1;
+    if(!b.latestActivityDate) return -1;
+    return new Date(b.latestActivityDate)-new Date(a.latestActivityDate);
+  });
+}
+
+// ── Render grid card ──
 function renderGrid(list){
   if(!list.length){
     document.getElementById('main-area').innerHTML='<div class="loader" style="color:var(--text3)">No projects match.</div>';
     return;
   }
-  const today = new Date();
-  document.getElementById('main-area').innerHTML = `<div class="grid">${list.map(proj => {
-    const expanded = expandedId === proj.id;
-    const bCls = {wip:'b-wip',hold:'b-hold',completed:'b-done',not_started:'b-ns'}[proj.status]||'b-wip';
-    const bLbl = {wip:'WIP',hold:'ON HOLD',completed:'DISPATCHED',not_started:'NOT STARTED'}[proj.status]||'WIP';
-    const fc = fillColor(proj.overallPct);
+  document.getElementById('main-area').innerHTML=`<div class="grid">${list.map(proj=>{
+    const expanded=expandedId===proj.id;
+    const dl=getDeadlineInfo(proj);
+    const isRisk=dl&&dl.isAtRisk;
+    const bCls={wip:'b-wip',hold:'b-hold',completed:'b-done',not_started:'b-ns'}[proj.status]||'b-wip';
+    const bLbl={wip:'WIP',hold:'ON HOLD',completed:'DISPATCHED',not_started:'NOT STARTED'}[proj.status]||'WIP';
+    const fc=fillColor(proj.overallPct);
 
-    let dlHtml = '';
-    if(proj.deadlineParsed){
-      const dl = new Date(proj.deadlineParsed);
-      const diff = Math.ceil((dl-today)/864e5);
-      const cls = diff<0?'dl-late':diff<=7?'dl-soon':'dl-ok';
-      const txt = diff<0?`${Math.abs(diff)}d overdue`:diff===0?'Due today':`${diff}d left`;
-      dlHtml = `<span class="deadline ${cls}">&#128197; ${proj.deadline} · ${txt}</span>`;
+    // Deadline tag on card
+    let dlHtml='';
+    if(dl){
+      if(isRisk){
+        dlHtml=`<span class="risk-tag">⚠️ At risk · ${formatDate(dl.projectedDispatch)} projected</span>`;
+      } else {
+        const cls=dl.daysToDispatch<0?'dl-late':dl.daysToDispatch<=14?'dl-soon':'dl-ok';
+        const txt=dl.daysToDispatch<0?`${Math.abs(dl.daysToDispatch)}d overdue`:dl.daysToDispatch===0?'Due today':`${dl.daysToDispatch}d to dispatch`;
+        dlHtml=`<span class="deadline ${cls}">&#128197; ${txt}</span>`;
+      }
     }
 
-    const actStr = timeSince(proj.lastActivity);
-    const isStale = proj.status === 'hold';
-    const actHtml = actStr ? `<span class="activity-tag${isStale?' stale':''}">&#9679; ${actStr}</span>` : '';
+    const actStr=timeSince(proj.lastActivity);
+    const isStale=proj.status==='hold';
+    const actHtml=actStr?`<span class="activity-tag${isStale?' stale':''}">&#9679; ${actStr}</span>`:'';
 
-    let prodsHtml = '';
+    let prodsHtml='';
     if(expanded){
-      prodsHtml = `<div class="products-wrap">
+      prodsHtml=`<div class="products-wrap">
         <div class="sec-label">${proj.products.length} product${proj.products.length!==1?'s':''}</div>
-        ${[...proj.products].sort((a,b) => {
-  if(!a.latestActivityDate && !b.latestActivityDate) return 0;
-  if(!a.latestActivityDate) return 1;
-  if(!b.latestActivityDate) return -1;
-  return new Date(b.latestActivityDate) - new Date(a.latestActivityDate);
-}).map(p => {
-          const chips = p.deptSet.map(d => {
-            const isCur = d === p.currentDept && !p.isDispatched;
-            const isDone = !isCur && p.deptSet.indexOf(d) < p.deptSet.indexOf(p.currentDept);
-            return `<span class="chip${isCur?' cur':isDone?' done-chip':''}">${d}</span>`;
-          }).join('') || `<span class="chip cur">${p.currentDept||'Not started'}</span>`;
-
-          const matByDept = {};
-          (p.recentMat||[]).forEach(m => {
-            if(!matByDept[m.dept]) matByDept[m.dept]=[];
-            matByDept[m.dept].push(m);
-          });
-
-          const matHtml = Object.entries(matByDept).slice(0,5).map(([dept,items])=>`
-            <div class="mat-dept-block">
-              <div class="mat-dept-lbl">${dept}</div>
-              <table class="mat-table">
-                <thead><tr><th>Material</th><th>Qty</th><th>Receiver</th></tr></thead>
-                <tbody>${items.slice(0,6).map(m=>`
-                  <tr>
-                    <td>${m.material}${m.spec?` <span style="color:var(--text3);font-size:10px">${m.spec}</span>`:''}</td>
-                    <td>${m.qty} ${m.uom}</td>
-                    <td>${m.receiver}</td>
-                  </tr>`).join('')}
-                </tbody>
-              </table>
-            </div>`).join('');
-
-          const pActStr = timeSince(p.latestActivityDate);
-          const pStale = p.latestActivityDate && (Date.now()-new Date(p.latestActivityDate).getTime()) > 72*3600000;
-
-          return `<div class="prod">
-            <div class="prod-head">
-              <div>
-                <div class="prod-name">${p.name||p.code}</div>
-                <div class="prod-code">${p.code}${p.qty?' · Qty: '+p.qty:''}</div>
-              </div>
-              <div class="prod-pct">${p.pct}%</div>
-            </div>
-            <div class="prod-track"><div class="prod-fill" style="width:${p.pct}%;background:${fillColor(p.pct)}"></div></div>
-            <div class="dep-chips">${chips}</div>
-            ${pActStr?`<div class="prod-activity${pStale?' stale':''}">${pActStr}</div>`:''}
-            <div class="expand-hint" onclick="toggleProd('${proj.id}__${p.code}', event)" style="margin-top:6px;font-size:11px">
-  ${expandedProdId===proj.id+'__'+p.code ? '▲ Hide materials' : '▼ View materials'}
-</div>
-${expandedProdId===proj.id+'__'+p.code ? matHtml : ''}
-          </div>`;
-        }).join('')}
+        ${sortedProducts(proj.products).map(p=>renderProduct(p,proj.id)).join('')}
       </div>`;
     }
 
-    return `<div class="card${expanded?' open':''}" onclick="toggleCard('${proj.id}')">
+    return `<div class="card${expanded?' open':''}${isRisk?' at-risk':''}" onclick="toggleCard('${proj.id}')">
       <div class="card-top">
         <div class="card-head">
           <div>
             <div class="proj-name">${proj.name||proj.code}</div>
             <div class="proj-meta">${proj.code} · ${proj.products.length} product${proj.products.length!==1?'s':''}</div>
           </div>
-          <span class="badge ${bCls}">${bLbl}</span>
+          <div class="card-actions">
+            <a class="open-btn" onclick="openProject('${proj.id}',event)" href="#project/${proj.id}" title="Open full project page">↗</a>
+            <span class="badge ${bCls}${isRisk?' b-risk':''}">${isRisk?'⚠ AT RISK':bLbl}</span>
+          </div>
         </div>
         <div class="prog-area">
           <div class="prog-lbl"><span>Progress</span><span class="prog-pct">${proj.overallPct}%</span></div>
@@ -475,12 +587,102 @@ ${expandedProdId===proj.id+'__'+p.code ? matHtml : ''}
   }).join('')}</div>`;
 }
 
+// ── Full project page ──
+function renderProjectPage(proj){
+  const dl=getDeadlineInfo(proj);
+  const isRisk=dl&&dl.isAtRisk;
+  const bCls={wip:'b-wip',hold:'b-hold',completed:'b-done',not_started:'b-ns'}[proj.status]||'b-wip';
+  const bLbl={wip:'WIP',hold:'ON HOLD',completed:'DISPATCHED',not_started:'NOT STARTED'}[proj.status]||'WIP';
+  const fc=fillColor(proj.overallPct);
+
+  let riskBanner='';
+  if(isRisk){
+    riskBanner=`<div class="risk-banner">
+      <div class="risk-banner-icon">⚠️</div>
+      <div class="risk-banner-text">
+        <div class="risk-banner-title">Project at risk of delay</div>
+        Progress is ${proj.overallPct}% — needs to be ${RISK_PCT_THRESHOLD}% by ${formatDate(dl.riskThreshold)} to dispatch on time.<br>
+        Expected dispatch: <strong>${formatDate(dl.expectedDispatch)}</strong> &nbsp;·&nbsp;
+        Projected if delayed: <strong>${formatDate(dl.projectedDispatch)}</strong>
+      </div>
+    </div>`;
+  }
+
+  let deadlineMeta='';
+  if(dl){
+    deadlineMeta=`<span>&#128197; ${isRisk?'⚠ At risk · ':''}Expected dispatch: ${formatDate(dl.expectedDispatch)} (${dl.daysToDispatch>0?dl.daysToDispatch+'d remaining':Math.abs(dl.daysToDispatch)+'d overdue'})</span>`;
+  }
+
+  const prods=sortedProducts(proj.products);
+
+  document.getElementById('proj-page-content').innerHTML=`
+    <div class="proj-page-header">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <div class="proj-page-title">${proj.name||proj.code}</div>
+            <span class="badge ${isRisk?'b-risk':bCls}">${isRisk?'⚠ AT RISK':bLbl}</span>
+          </div>
+          <div class="proj-page-meta">
+            <span>${proj.code}</span>
+            <span>${proj.products.length} products</span>
+            ${proj.overallDept?`<span>Currently in: ${proj.overallDept}</span>`:''}
+            ${deadlineMeta}
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:28px;font-weight:600;color:${fc}">${proj.overallPct}%</div>
+          <div style="font-size:11px;color:var(--text3);font-family:DM Mono,monospace">overall progress</div>
+        </div>
+      </div>
+      <div style="margin-top:12px">
+        <div class="track" style="height:6px"><div class="fill" style="width:${proj.overallPct}%;background:${fc}"></div></div>
+      </div>
+    </div>
+
+    ${riskBanner}
+
+    <div class="proj-page-stats">
+      ${[
+        {label:'Total products', val:proj.products.length, cls:''},
+        {label:'Dispatched',     val:proj.products.filter(p=>p.isDispatched).length, cls:'c-green'},
+        {label:'In progress',    val:proj.products.filter(p=>!p.isDispatched&&p.pct>0).length, cls:'c-blue'},
+        {label:'Not started',    val:proj.products.filter(p=>p.pct===0&&!p.isDispatched).length, cls:'c-purple'},
+      ].map(s=>`<div class="stat"><div class="stat-label">${s.label}</div><div class="stat-val ${s.cls}">${s.val}</div></div>`).join('')}
+    </div>
+
+    <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-family:DM Mono,monospace;margin-bottom:12px">
+      ${prods.length} Products — sorted by latest activity
+    </div>
+    ${prods.map(p=>renderProduct(p,proj.id)).join('')}
+  `;
+}
+
+// ── Hash routing ──
+function handleHash(){
+  const hash=window.location.hash.replace('#','');
+  if(hash.startsWith('project/')){
+    const projId=hash.replace('project/','');
+    if(allProjects.length){
+      showProjectPage(projId);
+    } else {
+      // Wait for data then show
+      const wait=setInterval(()=>{
+        if(allProjects.length){ clearInterval(wait); showProjectPage(projId); }
+      },100);
+    }
+  } else if(hash && !hash.startsWith('project/')){
+    expandedId=hash;
+    applyFilters();
+  }
+}
+
+window.addEventListener('hashchange', handleHash);
+
 // Init
 loadData(false);
-if(window.location.hash){
-  expandedId = window.location.hash.replace('#','');
-}
 scheduleRefresh();
+handleHash();
 </script>
 </body>
 </html>
