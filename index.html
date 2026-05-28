@@ -441,10 +441,10 @@ function renderGrid(list){
             <div class="prod-track"><div class="prod-fill" style="width:${p.pct}%;background:${fillColor(p.pct)}"></div></div>
             <div class="dep-chips">${chips}</div>
             ${pActStr?`<div class="prod-activity${pStale?' stale':''}">${pActStr}</div>`:''}
-            <div class="expand-hint" onclick="toggleProd('${proj.id}_${p.code}', event)" style="margin-top:6px;font-size:11px">
-  ${expandedProdId===`${proj.id}_${p.code}` ? '▲ Hide materials' : '▼ View materials'}
+            <div class="expand-hint" onclick="toggleProd('${proj.id}__${p.code}', event)" style="margin-top:6px;font-size:11px">
+  ${expandedProdId===proj.id+'__'+p.code ? '▲ Hide materials' : '▼ View materials'}
 </div>
-${expandedProdId===p.code ? matHtml : ''}
+${expandedProdId===proj.id+'__'+p.code ? matHtml : ''}
           </div>`;
         }).join('')}
       </div>`;
