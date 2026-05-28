@@ -459,7 +459,12 @@ function toggleCard(id){
 function toggleProd(id,e){
   e.stopPropagation();
   expandedProdId=expandedProdId===id?null:id;
-  applyFilters();
+  if(currentProjectPage){
+    const proj=allProjects.find(p=>p.id===currentProjectPage);
+    if(proj) renderProjectPage(proj);
+  } else {
+    applyFilters();
+  }
 }
 
 // ── Shared product renderer ──
