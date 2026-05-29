@@ -102,7 +102,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .risk-tag{font-size:11px;font-family:'DM Mono',monospace;color:var(--red)}
 
 /* ── Expand hint ── */
-.expand-hint{font-size:11px;color:var(--text3);margin-top:8px;display:flex;align-items:center;gap:4px;cursor:pointer}
+.expand-hint{font-size:11px;color:var(--text3);margin-top:8px;display:flex;align-items:center;gap:4px}
+
 /* ── Products ── */
 .products-wrap{border-top:1px solid var(--border);padding:13px 17px;background:rgba(0,0,0,.25)}
 .sec-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-family:'DM Mono',monospace;margin-bottom:10px}
@@ -144,6 +145,21 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .risk-banner-text{font-size:12px;line-height:1.6}
 .risk-banner-title{font-weight:600;color:var(--red);margin-bottom:2px}
 
+/* ── Activity feed ── */
+.feed-item{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 15px;margin-bottom:8px;display:flex;gap:12px;align-items:flex-start}
+.feed-dot{width:8px;height:8px;border-radius:50%;background:var(--blue);flex-shrink:0;margin-top:4px}
+.feed-dot.stale{background:var(--amber)}
+.feed-body{flex:1;min-width:0}
+.feed-proj{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.feed-prod{font-size:11px;color:var(--text2);margin-top:1px}
+.feed-dept{display:inline-block;font-size:10px;padding:2px 8px;border-radius:999px;background:var(--blue-dim);color:var(--blue);border:1px solid rgba(59,130,246,.2);font-family:'DM Mono',monospace;margin-top:4px}
+.feed-time{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;white-space:nowrap;flex-shrink:0}
+/* ── Dept drill banner ── */
+.dept-banner{background:var(--blue-dim);border:1px solid rgba(59,130,246,.2);border-radius:10px;padding:10px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.dept-banner-text{font-size:13px;font-weight:500}
+.dept-banner-count{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace}
+.dept-banner-clear{font-size:11px;color:var(--text3);cursor:pointer;padding:3px 10px;border-radius:999px;border:1px solid var(--border2);background:transparent;font-family:'DM Mono',monospace}
+.dept-banner-clear:hover{color:var(--text);border-color:var(--text2)}
 /* ── Loader / Error ── */
 .loader{padding:3rem;text-align:center;color:var(--text3)}
 .spin{display:inline-block;width:18px;height:18px;border:2px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px}
@@ -194,7 +210,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 	</g>
 </g>
 </svg>
-      <span style="font-size:15px;font-weight:600;letter-spacing:-.3px;color:var(--text)">Production Floor</span>
       <div class="brand-divider"></div>
       <div class="brand-sub">
         <span class="conn-dot" id="brand-dot"></span>
@@ -222,6 +237,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <button class="fbtn"    id="fbtn-wip"          onclick="setFilter('wip',this,'on')">WIP</button>
       <button class="fbtn"    id="fbtn-hold"         onclick="setFilter('hold',this,'on-amber')">On hold</button>
       <button class="fbtn"    id="fbtn-completed"    onclick="setFilter('completed',this,'on-green')">Completed</button>
+      <button class="fbtn"    id="fbtn-activity"     onclick="setFilter('activity',this,'on')">&#9679; Activity</button>
       <div class="sort-wrap">
         <select class="sort-select" id="sort-select" onchange="changeSort(this.value)">
           <option value="latestActivity">Latest Activity</option>
@@ -260,6 +276,7 @@ let isFetching = false;
 let refreshTimer = null;
 let countdownTimer = null;
 let currentProjectPage = null;
+let deptFilter = null;
 
 // ── Deadline logic ──
 function getDeadlineInfo(proj){
@@ -355,6 +372,7 @@ async function loadData(silent=false){
     document.getElementById('brand-dot').style.background = '#22c55e';
     document.getElementById('sync-text').textContent = `Synced ${now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})} · ${allProjects.length} projects`;
     document.getElementById('refresh-ring').style.display = 'flex';
+    updateTabTitle();
     const scrollY = silent ? window.scrollY : 0;
     if(currentProjectPage){
       const proj = allProjects.find(p=>p.id===currentProjectPage);
@@ -413,13 +431,42 @@ function showProjectPage(projId){
 // ── Filters ──
 function setFilter(f,btn,cls){
   activeFilter=f;
+  deptFilter=null;
   document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on','on-amber','on-green','on-purple'));
   btn.classList.add(cls); applyFilters();
+}
+function setDeptFilter(dept,e){
+  if(e){ e.stopPropagation(); }
+  deptFilter=dept;
+  activeFilter='dept';
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on','on-amber','on-green','on-purple'));
+  applyFilters();
+}
+function clearDeptFilter(){
+  deptFilter=null;
+  activeFilter='all';
+  document.getElementById('fbtn-all').classList.add('on');
+  applyFilters();
 }
 function changeSort(mode){ sortMode=mode; applyFilters(); }
 function applyFilters(){
   if(currentProjectPage) return;
   const q=(document.getElementById('search-box').value||'').toLowerCase();
+
+  // ── Activity feed mode ──
+  if(activeFilter==='activity'){
+    renderStats();
+    renderActivityFeed(q);
+    return;
+  }
+
+  // ── Dept drill-down mode ──
+  if(activeFilter==='dept' && deptFilter){
+    renderStats();
+    renderDeptDrilldown(deptFilter, q);
+    return;
+  }
+
   let list=allProjects;
   if(activeFilter==='all') list=list.filter(p=>p.status!=='completed'&&p.status!=='not_started');
   else if(activeFilter==='not_started') list=list.filter(p=>p.status==='not_started');
@@ -437,6 +484,107 @@ function applyFilters(){
     return 0;
   });
   renderStats(); renderGrid(list);
+}
+
+// ── Activity Feed renderer ──
+function renderActivityFeed(q){
+  const cutoff72h = Date.now() - 72*3600000;
+  const items = [];
+  allProjects.forEach(proj=>{
+    if(proj.status==='not_started') return;
+    proj.products.forEach(p=>{
+      if(!p.latestActivityDate) return;
+      const t = new Date(p.latestActivityDate).getTime();
+      if(t < cutoff72h) return;
+      if(q && !proj.name.toLowerCase().includes(q) && !proj.code.toLowerCase().includes(q) && !(p.name||'').toLowerCase().includes(q)) return;
+      items.push({proj, p, t});
+    });
+  });
+  items.sort((a,b)=>b.t-a.t);
+
+  if(!items.length){
+    document.getElementById('main-area').innerHTML='<div class="loader" style="color:var(--text3)">No activity in the last 72 hours.</div>';
+    return;
+  }
+
+  const html=`<div style="margin-bottom:10px;font-size:11px;color:var(--text3);font-family:DM Mono,monospace">${items.length} product${items.length!==1?'s':''} active in last 72h</div>`+
+    items.map(({proj,p,t})=>{
+      const diff=Date.now()-t;
+      const h=Math.floor(diff/3600000);
+      const timeStr=h<1?'< 1h ago':h<24?h+'h ago':Math.floor(h/24)+'d ago';
+      const isStale=diff>48*3600000;
+      return `<div class="feed-item">
+        <div class="feed-dot${isStale?' stale':''}"></div>
+        <div class="feed-body">
+          <div class="feed-proj">${proj.name||proj.code} <span style="color:var(--text3);font-weight:400">· ${proj.code}</span></div>
+          <div class="feed-prod">${p.name||p.code}${p.qty?' · Qty: '+p.qty:''}</div>
+          ${p.currentDept?`<span class="feed-dept">${p.currentDept}</span>`:''}
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+          <div class="feed-time">${timeStr}</div>
+          <a class="open-btn" onclick="openProject('${proj.id}',event)" href="#project/${proj.id}">↗</a>
+        </div>
+      </div>`;
+    }).join('');
+  document.getElementById('main-area').innerHTML=html;
+}
+
+// ── Dept Drill-down renderer ──
+function renderDeptDrilldown(dept, q){
+  const items=[];
+  allProjects.forEach(proj=>{
+    if(proj.status==='completed'||proj.status==='not_started') return;
+    proj.products.forEach(p=>{
+      if((p.currentDept||'').toLowerCase()===dept.toLowerCase() && !p.isDispatched){
+        if(q && !proj.name.toLowerCase().includes(q) && !proj.code.toLowerCase().includes(q)) return;
+        items.push({proj,p});
+      }
+    });
+  });
+  items.sort((a,b)=>{
+    if(!a.p.latestActivityDate&&!b.p.latestActivityDate) return 0;
+    if(!a.p.latestActivityDate) return 1;
+    if(!b.p.latestActivityDate) return -1;
+    return new Date(b.p.latestActivityDate)-new Date(a.p.latestActivityDate);
+  });
+
+  const banner=`<div class="dept-banner">
+    <div>
+      <div class="dept-banner-text">&#127981; ${dept}</div>
+      <div class="dept-banner-count">${items.length} product${items.length!==1?'s':''} currently in this department</div>
+    </div>
+    <button class="dept-banner-clear" onclick="clearDeptFilter()">✕ Clear filter</button>
+  </div>`;
+
+  if(!items.length){
+    document.getElementById('main-area').innerHTML=banner+'<div class="loader" style="color:var(--text3)">No active products in this department.</div>';
+    return;
+  }
+
+  const feedHtml=items.map(({proj,p})=>{
+    const actStr=p.latestActivityDate?timeSince(p.latestActivityDate):'';
+    const pStale=p.latestActivityDate&&(Date.now()-new Date(p.latestActivityDate).getTime())>72*3600000;
+    return `<div class="feed-item">
+      <div class="feed-dot${pStale?' stale':''}"></div>
+      <div class="feed-body">
+        <div class="feed-proj">${proj.name||proj.code} <span style="color:var(--text3);font-weight:400">· ${proj.code}</span></div>
+        <div class="feed-prod">${p.name||p.code}${p.qty?' · Qty '+p.qty:''}</div>
+        <div style="font-size:10px;color:var(--text3);font-family:DM Mono,monospace;margin-top:3px">${p.pct}% complete${actStr?' · '+actStr:''}</div>
+      </div>
+      <a class="open-btn" onclick="openProject('${proj.id}',event)" href="#project/${proj.id}">↗</a>
+    </div>`;
+  }).join('');
+  document.getElementById('main-area').innerHTML=banner+feedHtml;
+}
+
+function updateTabTitle(){
+  const atRisk = allProjects.filter(p=>{
+    const dl=getDeadlineInfo(p);
+    return dl&&dl.isAtRisk;
+  }).length;
+  const onHold = allProjects.filter(p=>p.status==='hold').length;
+  const alertCount = atRisk + onHold;
+  document.title = alertCount>0 ? `(${alertCount}) Production Floor · Artenspace` : 'Production Floor · Artenspace';
 }
 
 function renderStats(){
@@ -472,8 +620,9 @@ function renderProduct(p, projId){
   const chips=p.deptSet.map(d=>{
     const isCur=d===p.currentDept&&!p.isDispatched;
     const isDone=!isCur&&p.deptSet.indexOf(d)<p.deptSet.indexOf(p.currentDept);
-    return `<span class="chip${isCur?' cur':isDone?' done-chip':''}">${d}</span>`;
-  }).join('')||`<span class="chip cur">${p.currentDept||'Not started'}</span>`;
+    const clickable=isCur?` onclick="setDeptFilter('${d.replace(/'/g,"\\'")}',event)" title="See all products in ${d.replace(/'/g,"\\'")} dept" style="cursor:pointer"`:'';
+    return `<span class="chip${isCur?' cur':isDone?' done-chip':''}"${clickable}>${d}</span>`;
+  }).join('')||`<span class="chip cur" onclick="setDeptFilter('${(p.currentDept||'').replace(/'/g,"\\'")}',event)" style="cursor:pointer">${p.currentDept||'Not started'}</span>`;
 
   const matByDept={};
   (p.recentMat||[]).forEach(m=>{
