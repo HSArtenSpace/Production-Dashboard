@@ -160,6 +160,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .dept-banner-count{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace}
 .dept-banner-clear{font-size:11px;color:var(--text3);cursor:pointer;padding:3px 10px;border-radius:999px;border:1px solid var(--border2);background:transparent;font-family:'DM Mono',monospace}
 .dept-banner-clear:hover{color:var(--text);border-color:var(--text2)}
+/* ── Dept selector ── */
+.dept-selector{background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:16px;margin-bottom:18px}
+.dept-selector-title{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-family:'DM Mono',monospace;margin-bottom:10px}
+.dept-chips-grid{display:flex;gap:8px;flex-wrap:wrap}
+.dept-chip-btn{font-family:'DM Sans',sans-serif;font-size:12px;padding:6px 14px;border-radius:999px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px}
+.dept-chip-btn:hover{background:var(--blue-dim);border-color:var(--blue);color:var(--blue)}
+.dept-chip-count{font-size:10px;font-family:'DM Mono',monospace;background:var(--bg4);padding:1px 6px;border-radius:999px}
 /* ── Loader / Error ── */
 .loader{padding:3rem;text-align:center;color:var(--text3)}
 .spin{display:inline-block;width:18px;height:18px;border:2px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px}
@@ -238,6 +245,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <button class="fbtn"    id="fbtn-hold"         onclick="setFilter('hold',this,'on-amber')">On hold</button>
       <button class="fbtn"    id="fbtn-completed"    onclick="setFilter('completed',this,'on-green')">Completed</button>
       <button class="fbtn"    id="fbtn-activity"     onclick="setFilter('activity',this,'on')">&#9679; Activity</button>
+      <button class="fbtn"    id="fbtn-dept"         onclick="showDeptSelector(this)">&#127981; By Department</button>
       <div class="sort-wrap">
         <select class="sort-select" id="sort-select" onchange="changeSort(this.value)">
           <option value="latestActivity">Latest Activity</option>
@@ -445,9 +453,43 @@ function setDeptFilter(dept,e){
 function clearDeptFilter(){
   deptFilter=null;
   activeFilter='all';
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on','on-amber','on-green','on-purple'));
   document.getElementById('fbtn-all').classList.add('on');
   applyFilters();
 }
+function showDeptSelector(btn){
+  activeFilter='dept_select';
+  deptFilter=null;
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on','on-amber','on-green','on-purple'));
+  btn.classList.add('on');
+  renderStats();
+  // Build dept counts from live projects
+  const deptMap={};
+  allProjects.forEach(proj=>{
+    if(proj.status==='completed'||proj.status==='not_started') return;
+    proj.products.forEach(p=>{
+      if(!p.currentDept||p.isDispatched) return;
+      if(!deptMap[p.currentDept]) deptMap[p.currentDept]=0;
+      deptMap[p.currentDept]++;
+    });
+  });
+  const depts=Object.entries(deptMap).sort((a,b)=>b[1]-a[1]);
+  if(!depts.length){
+    document.getElementById('main-area').innerHTML='<div class="loader" style="color:var(--text3)">No active departments found.</div>';
+    return;
+  }
+  const selector=`<div class="dept-selector">
+    <div class="dept-selector-title">Select a department to see all active products</div>
+    <div class="dept-chips-grid">
+      ${depts.map(([dept,count])=>`
+        <button class="dept-chip-btn" onclick="setDeptFilter('${dept.replace(/'/g,"\'")}',event)">
+          ${dept}<span class="dept-chip-count">${count}</span>
+        </button>`).join('')}
+    </div>
+  </div>`;
+  document.getElementById('main-area').innerHTML=selector;
+}
+
 function changeSort(mode){ sortMode=mode; applyFilters(); }
 function applyFilters(){
   if(currentProjectPage) return;
@@ -459,6 +501,9 @@ function applyFilters(){
     renderActivityFeed(q);
     return;
   }
+
+  // ── Dept selector landing ──
+  if(activeFilter==='dept_select'){ return; }
 
   // ── Dept drill-down mode ──
   if(activeFilter==='dept' && deptFilter){
@@ -491,9 +536,10 @@ function renderActivityFeed(q){
   const cutoff72h = Date.now() - 72*3600000;
   const items = [];
   allProjects.forEach(proj=>{
-    if(proj.status==='not_started') return;
+    if(proj.status==='not_started'||proj.status==='completed') return;
     proj.products.forEach(p=>{
       if(!p.latestActivityDate) return;
+      if(p.isDispatched) return;
       const t = new Date(p.latestActivityDate).getTime();
       if(t < cutoff72h) return;
       if(q && !proj.name.toLowerCase().includes(q) && !proj.code.toLowerCase().includes(q) && !(p.name||'').toLowerCase().includes(q)) return;
