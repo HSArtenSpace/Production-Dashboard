@@ -490,7 +490,21 @@ function showDeptSelector(btn){
   document.getElementById('main-area').innerHTML=selector;
 }
 
-function changeSort(mode){ sortMode=mode; applyFilters(); }
+function changeSort(mode){
+  sortMode=mode;
+  const q=(document.getElementById('search-box').value||'').toLowerCase();
+  if(activeFilter==='activity'){
+    renderStats();
+    renderActivityFeed(q);
+    return;
+  }
+  if(activeFilter==='dept' && deptFilter){
+    renderStats();
+    renderDeptDrilldown(deptFilter, q);
+    return;
+  }
+  applyFilters();
+}
 function applyFilters(){
   if(currentProjectPage) return;
   const q=(document.getElementById('search-box').value||'').toLowerCase();
@@ -546,7 +560,7 @@ function renderActivityFeed(q){
       items.push({proj, p, t});
     });
   });
-  items.sort((a,b)=>b.t-a.t);
+  items.sort((a,b)=> sortMode==='oldestActivity' ? a.t-b.t : b.t-a.t);
 
   if(!items.length){
     document.getElementById('main-area').innerHTML='<div class="loader" style="color:var(--text3)">No activity in the last 72 hours.</div>';
@@ -588,10 +602,14 @@ function renderDeptDrilldown(dept, q){
     });
   });
   items.sort((a,b)=>{
+    if(sortMode==='highestProgress') return b.p.pct-a.p.pct;
+    if(sortMode==='lowestProgress')  return a.p.pct-b.p.pct;
     if(!a.p.latestActivityDate&&!b.p.latestActivityDate) return 0;
     if(!a.p.latestActivityDate) return 1;
     if(!b.p.latestActivityDate) return -1;
-    return new Date(b.p.latestActivityDate)-new Date(a.p.latestActivityDate);
+    return sortMode==='oldestActivity'
+      ? new Date(a.p.latestActivityDate)-new Date(b.p.latestActivityDate)
+      : new Date(b.p.latestActivityDate)-new Date(a.p.latestActivityDate);
   });
 
   const banner=`<div class="dept-banner">
