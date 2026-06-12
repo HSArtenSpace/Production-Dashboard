@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Store Intelligence · Artenspace</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0f0f0f;--bg2:#161616;--bg3:#1e1e1e;--bg4:#252525;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);
+  --text:#f0f0f0;--text2:#999;--text3:#555;
+  --blue:#3b82f6;--blue-dim:rgba(59,130,246,0.13);
+  --amber:#f59e0b;--amber-dim:rgba(245,158,11,0.13);
+  --green:#22c55e;--green-dim:rgba(34,197,94,0.13);
+  --red:#ef4444;--red-dim:rgba(239,68,68,0.13);
+  --purple:#a855f7;--purple-dim:rgba(168,85,247,0.13);
+  --orange:#f05423;
+  --teal:#14b8a6;--teal-dim:rgba(20,184,166,0.13);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+.shell{max-width:1400px;margin:0 auto;padding:28px 24px}
+
+/* ── Header ── */
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.brand-link{display:flex;align-items:center;gap:10px;text-decoration:none;cursor:pointer}
+.brand-logo{height:22px;width:auto;flex-shrink:0}
+.brand-divider{width:1px;height:16px;background:var(--border2);flex-shrink:0}
+.brand-sub{font-size:11px;font-family:'DM Mono',monospace;color:var(--text3);white-space:nowrap;display:flex;align-items:center;gap:6px}
+.conn-dot{width:6px;height:6px;border-radius:50%;background:var(--text3);transition:background .4s;flex-shrink:0}
+.header-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.header-nav{font-size:12px;padding:7px 13px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;text-decoration:none;transition:all .2s;white-space:nowrap;font-family:'DM Sans',sans-serif}
+.header-nav:hover{background:var(--bg4);color:var(--text)}
+.header-nav.active{border-color:var(--orange);color:var(--orange)}
+.search{font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 13px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);width:210px;outline:none}
+.search:focus{border-color:var(--blue)}
+.search::placeholder{color:var(--text3)}
+.btn{font-family:'DM Sans',sans-serif;font-size:12px;padding:7px 13px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;transition:all .2s;white-space:nowrap}
+.btn:hover{background:var(--bg4);color:var(--text)}
+
+/* ── Refresh ring ── */
+.refresh-ring{width:14px;height:14px;flex-shrink:0}
+.refresh-ring svg{transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:var(--border2);stroke-width:2.5}
+.ring-fill{fill:none;stroke:var(--orange);stroke-width:2.5;stroke-linecap:round;transition:stroke-dashoffset .9s linear;stroke-dasharray:44;stroke-dashoffset:44}
+
+/* ── KPI strip ── */
+.kpi-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:22px}
+.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:13px 15px}
+.kpi-label{font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em;font-family:'DM Mono',monospace}
+.kpi-val{font-size:24px;font-weight:500}
+.kpi-sub{font-size:10px;color:var(--text3);margin-top:3px;font-family:'DM Mono',monospace}
+.c-blue{color:var(--blue)}.c-amber{color:var(--amber)}.c-green{color:var(--green)}
+.c-red{color:var(--red)}.c-purple{color:var(--purple)}.c-teal{color:var(--teal)}.c-orange{color:var(--orange)}
+
+/* ── Filter row ── */
+.filter-row{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;align-items:center}
+.fbtn{font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 14px;border-radius:999px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;transition:all .15s}
+.fbtn:hover{color:var(--text);border-color:var(--border2)}
+.fbtn.on{background:var(--orange);border-color:var(--orange);color:#fff}
+.fbtn.on-red{background:var(--red);border-color:var(--red);color:#fff}
+.fbtn.on-amber{background:var(--amber);border-color:var(--amber);color:#000}
+.fbtn.on-green{background:var(--green);border-color:var(--green);color:#000}
+.fbtn.on-teal{background:var(--teal);border-color:var(--teal);color:#000}
+.sort-wrap{margin-left:auto}
+.sort-select{background:var(--bg3);color:var(--text2);border:1px solid var(--border);border-radius:999px;padding:5px 14px;font-size:12px;outline:none;cursor:pointer;font-family:'DM Sans',sans-serif}
+.sort-select:hover{border-color:var(--border2);color:var(--text)}
+
+/* ── Two column layout ── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:22px}
+@media(max-width:860px){.two-col{grid-template-columns:1fr}}
+
+/* ── Panel ── */
+.panel{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.panel-head{padding:13px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.panel-title{font-size:12px;font-weight:500;font-family:'DM Mono',monospace;color:var(--text2);text-transform:uppercase;letter-spacing:.05em}
+.panel-count{font-size:11px;font-family:'DM Mono',monospace;color:var(--text3)}
+.panel-body{padding:0}
+
+/* ── Item rows ── */
+.item-row{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s}
+.item-row:last-child{border-bottom:none}
+.item-row:hover{background:var(--bg3)}
+.item-row.expanded{background:var(--bg3);border-left:2px solid var(--orange)}
+.item-name{flex:1;min-width:0}
+.item-title{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item-meta{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:1px}
+.item-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0}
+.item-stock{font-size:14px;font-weight:500;font-family:'DM Mono',monospace}
+.item-uom{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace}
+
+/* ── Badge ── */
+.badge{font-size:10px;padding:2px 8px;border-radius:999px;white-space:nowrap;font-family:'DM Mono',monospace;font-weight:500}
+.b-reorder{background:var(--red-dim);color:var(--red);border:1px solid rgba(239,68,68,.2)}
+.b-overstock{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(245,158,11,.2)}
+.b-watch{background:var(--blue-dim);color:var(--blue);border:1px solid rgba(59,130,246,.2)}
+.b-ok{background:var(--green-dim);color:var(--green);border:1px solid rgba(34,197,94,.2)}
+.b-nodata{background:var(--bg4);color:var(--text3);border:1px solid var(--border)}
+.b-half{background:var(--purple-dim);color:var(--purple);border:1px solid rgba(168,85,247,.2)}
+
+/* ── Detail expand ── */
+.item-detail{background:rgba(0,0,0,.3);border-bottom:1px solid var(--border);padding:13px 16px}
+.detail-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px;margin-bottom:12px}
+.detail-stat{background:var(--bg3);border-radius:8px;padding:8px 10px}
+.detail-stat-lbl{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:3px}
+.detail-stat-val{font-size:16px;font-weight:500;font-family:'DM Mono',monospace}
+.mini-table{width:100%;border-collapse:collapse;font-size:11px;margin-top:8px}
+.mini-table th{color:var(--text3);text-align:left;padding:3px 5px;font-weight:400;font-family:'DM Mono',monospace;font-size:10px;border-bottom:1px solid var(--border)}
+.mini-table td{padding:4px 5px;border-bottom:1px solid var(--border);color:var(--text2)}
+.mini-table td:first-child{color:var(--text)}
+.mini-table tr:last-child td{border-bottom:none}
+.section-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-family:'DM Mono',monospace;margin-bottom:6px;margin-top:10px}
+
+/* ── Chart ── */
+.chart-wrap{padding:16px;position:relative}
+
+/* ── Full table view ── */
+.full-table{width:100%;border-collapse:collapse;font-size:12px}
+.full-table th{color:var(--text3);text-align:left;padding:8px 12px;font-weight:400;font-family:'DM Mono',monospace;font-size:10px;border-bottom:1px solid var(--border2);background:var(--bg3);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+.full-table td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text2);font-family:'DM Mono',monospace;font-size:11px;white-space:nowrap}
+.full-table td.name-col{color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.full-table tr:hover td{background:var(--bg3)}
+.tbl-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border)}
+
+/* ── Loader / Error ── */
+.loader{padding:3rem;text-align:center;color:var(--text3)}
+.spin{display:inline-block;width:18px;height:18px;border:2px solid var(--border2);border-top-color:var(--orange);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.err-box{padding:2rem;text-align:center;background:var(--bg2);border:1px solid rgba(239,68,68,.2);border-radius:12px}
+.err-title{color:var(--red);font-size:14px;font-weight:500;margin-bottom:8px}
+.err-msg{font-size:12px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:8px}
+
+/* ── Stock bar ── */
+.stock-bar-wrap{flex:1;max-width:80px}
+.stock-bar-track{height:3px;background:var(--bg4);border-radius:2px;overflow:hidden}
+.stock-bar-fill{height:100%;border-radius:2px;transition:width .3s}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="header">
+    <a class="brand-link" href="index.html">
+      <svg class="brand-logo" viewBox="0 0 2260.8 629.4" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+        <style>.st0{fill:#F05423;}</style>
+        <g><g>
+          <path class="st0" d="M1329.1,402.7c126.7,0,253.5,0,381.1,0c0-21,0-41.9,0-63.9c-102.3,0-204.3,0-307,0c0-20.5,0-39.8,0-60.3c79.1,0,158.2,0,237.8,0c0-22,0-42.9,0-64.9c-79.4,0-158.5,0-237.9,0c0-20.4,0-39.8,0-60.2c102.6,0,204.6,0,307.2,0c0-21.9,0-42.9,0-64.8c-127.5,0-253.9,0-381.2,0C1329.1,193.3,1329.1,297.6,1329.1,402.7z"/>
+          <path class="st0" d="M903.9,88.5v65.3c51.5-0.2,103.1-0.1,154.5-0.1c2.1,0,4.2,0.3,7.3,0.5v248.9h0.1h73.5h0.1V154.2c3.1-0.2,5.2-0.5,7.3-0.5c51.5,0,103.1-0.1,154.5,0.1V88.5c-66.3-0.3-132.5,0-198.8,0.1C1036.4,88.5,970.2,88.2,903.9,88.5z"/>
+          <path class="st0" d="M208.2,88.4L94.1,402.7h78.8l101.6-280c4.2-11.6,20.6-11.6,24.8,0l101.6,280h78.8L365.7,88.4H208.2z"/>
+          <path class="st0" d="M685.8,277.1h105.4c52.1,0,94.4-42.3,94.4-94.4s-42.3-94.4-94.4-94.4H506v314.3h74V152.9h201.9c16.4,0,29.8,13.3,29.8,29.8c0,16.4-13.3,29.8-29.8,29.8H680.4c-39,0-70.5,31.6-70.5,70.5c0,32.6,22.3,60.9,54,68.6l194.4,50.4l15.2-62.8l-189.1-49.1C676.7,288.2,678,277.1,685.8,277.1z"/>
+          <path class="st0" d="M2092.7,88.3l0.1,280c-4.2,11.6-20.6,11.6-24.8,0l-55.9-95.3L1903.7,88.3h-0.1h-78.6h-0.1h-0.1h-78.6v314.3h74l-0.1-280c4.2-11.6,20.6-11.6,24.8,0l54.3,92.5l109.9,187.5h0.1h78.6h0.1h0.1h78.6V88.3H2092.7z"/>
+        </g></g>
+      </svg>
+      <div class="brand-divider"></div>
+      <div class="brand-sub">
+        <span class="conn-dot" id="brand-dot"></span>
+        <span id="sync-text">Not connected</span>
+        <div class="refresh-ring" id="refresh-ring" style="display:none">
+          <svg width="14" height="14" viewBox="0 0 18 18">
+            <circle class="ring-bg" cx="9" cy="9" r="7"/>
+            <circle class="ring-fill" id="ring-fill" cx="9" cy="9" r="7"/>
+          </svg>
+        </div>
+      </div>
+    </a>
+    <div class="header-right">
+      <a class="header-nav" href="index.html">↗ Production</a>
+      <a class="header-nav active" href="store.html">Store Intelligence</a>
+      <input class="search" type="text" placeholder="Search material / code…" id="search-box" oninput="applyFilters()">
+      <button class="btn" onclick="manualRefresh()">&#8635; Refresh</button>
+    </div>
+  </div>
+
+  <!-- KPI strip -->
+  <div class="kpi-strip" id="kpi-strip">
+    <div class="loader"><span class="spin"></span>Loading store data…</div>
+  </div>
+
+  <!-- Filter row -->
+  <div class="filter-row">
+    <button class="fbtn on"  id="fbtn-all"       onclick="setFilter('all',this,'on')">All items</button>
+    <button class="fbtn"     id="fbtn-reorder"   onclick="setFilter('reorder',this,'on-red')">⚠ Reorder now</button>
+    <button class="fbtn"     id="fbtn-half"      onclick="setFilter('half',this,'on')">▼ Below 50%</button>
+    <button class="fbtn"     id="fbtn-overstock" onclick="setFilter('overstock',this,'on-amber')">Overstocked</button>
+    <button class="fbtn"     id="fbtn-watch"     onclick="setFilter('watch',this,'on')">Watch list</button>
+    <button class="fbtn"     id="fbtn-ok"        onclick="setFilter('ok',this,'on-green')">Adequate</button>
+    <button class="fbtn"     id="fbtn-nodata"    onclick="setFilter('nodata',this,'on-teal')">No activity</button>
+    <div class="sort-wrap">
+      <select class="sort-select" id="sort-select" onchange="applyFilters()">
+        <option value="stock_asc">Stock: Low → High</option>
+        <option value="stock_desc">Stock: High → Low</option>
+        <option value="consumption">Highest consumption</option>
+        <option value="reorder">Reorder gap first</option>
+        <option value="name">Name A–Z</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Main area -->
+  <div id="main-area"></div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+// ── Config ─────────────────────────────────────────────────
+const API_URL         = 'https://script.google.com/macros/s/AKfycbz_suji7p0oLb7ds5IrljI0N13VAIe3UFbkxlq1zXdWFPprqYvLRNwC1kam45zKG7LA/exec';
+const STORE_API       = API_URL + '?type=store';
+const REFRESH_MS      = 300000; // 5 min
+
+let storeData         = null;
+let activeFilter      = 'all';
+let expandedCode      = null;
+let isFetching        = false;
+let refreshTimer      = null;
+let countdownTimer    = null;
+let isFirstLoad       = true;
+let dailyChart        = null;
+
+// ── Helpers ────────────────────────────────────────────────
+function fmt(n, d=1){
+  if(n === null || n === undefined || isNaN(n)) return '—';
+  return parseFloat(n).toLocaleString('en-IN', {maximumFractionDigits: d, minimumFractionDigits: 0});
+}
+function fmtDate(iso){
+  if(!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-IN',{day:'2-digit',month:'short'});
+}
+function stockColor(item){
+  if(item.needsReorder)   return 'var(--red)';
+  if(item.belowHalfAlert) return 'var(--purple)';
+  if(item.isOverstocked)  return 'var(--amber)';
+  if(item.isWatch)        return 'var(--blue)';
+  if(!item.runningAvgMonthly && !item.currentStock) return 'var(--text3)';
+  return 'var(--green)';
+}
+function itemBadge(item){
+  if(item.needsReorder)   return '<span class="badge b-reorder">⚠ Reorder</span>';
+  if(item.belowHalfAlert) return '<span class="badge b-half">▼ Below 50%</span>';
+  if(item.isOverstocked)  return '<span class="badge b-overstock">Overstocked</span>';
+  if(item.isWatch)        return '<span class="badge b-watch">Watch</span>';
+  if(!item.runningAvgMonthly && !item.currentStock) return '<span class="badge b-nodata">No activity</span>';
+  return '<span class="badge b-ok">Adequate</span>';
+}
+
+// ── Data load ──────────────────────────────────────────────
+async function loadData(silent=false){
+  if(isFetching) return;
+  isFetching = true;
+  if(!silent && isFirstLoad){
+    document.getElementById('main-area').innerHTML = '<div class="loader"><span class="spin"></span>Loading live store data…</div>';
+  }
+  document.getElementById('brand-dot').style.background = 'var(--amber)';
+  document.getElementById('sync-text').textContent = 'Syncing…';
+  try {
+    const res  = await fetch(STORE_API + '&t=' + Date.now());
+    const data = await res.json();
+    if(data.error) throw new Error(data.error);
+    storeData  = data;
+    const now  = new Date(data.generatedAt);
+    document.getElementById('brand-dot').style.background = 'var(--green)';
+    document.getElementById('sync-text').textContent = `Synced ${now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})} · ${data.totalSKUs} SKUs`;
+    document.getElementById('refresh-ring').style.display = 'flex';
+    const scrollY = silent ? window.scrollY : 0;
+    renderKPIs();
+    applyFilters();
+    if(silent && scrollY) window.scrollTo({top:scrollY,behavior:'instant'});
+    isFirstLoad = false;
+  } catch(e){
+    document.getElementById('brand-dot').style.background = 'var(--red)';
+    document.getElementById('sync-text').textContent = 'Failed to sync';
+    if(isFirstLoad){
+      document.getElementById('main-area').innerHTML =
+        `<div class="err-box"><div class="err-title">Could not load store data</div>
+         <div class="err-msg">${e.message}</div>
+         <div class="err-msg" style="margin-top:8px">Make sure the updated Apps Script (Code.gs) is deployed and the ?type=store parameter works.<br>Run <b>testStoreRun()</b> in Apps Script editor to verify.</div></div>`;
+    }
+  } finally { isFetching = false; }
+}
+
+function manualRefresh(){ stopCountdown(); clearInterval(refreshTimer); loadData(false); scheduleRefresh(); }
+function scheduleRefresh(){
+  clearInterval(refreshTimer); startCountdown();
+  refreshTimer = setInterval(()=>{ loadData(true); startCountdown(); }, REFRESH_MS);
+}
+function startCountdown(){
+  stopCountdown();
+  const ring = document.getElementById('ring-fill');
+  if(!ring) return;
+  let elapsed = 0;
+  ring.style.strokeDashoffset = 44;
+  countdownTimer = setInterval(()=>{
+    elapsed += 500;
+    ring.style.strokeDashoffset = 44 - (44 * elapsed / REFRESH_MS);
+  }, 500);
+}
+function stopCountdown(){
+  if(countdownTimer){ clearInterval(countdownTimer); countdownTimer=null; }
+  const ring = document.getElementById('ring-fill');
+  if(ring) ring.style.strokeDashoffset = 44;
+}
+
+// ── KPI strip ──────────────────────────────────────────────
+function renderKPIs(){
+  if(!storeData) return;
+  const d = storeData;
+  const liveLabel = d.completeLiveMonths === 0
+    ? 'baseline only (Jun in progress)'
+    : d.completeLiveMonths + ' live month' + (d.completeLiveMonths > 1 ? 's' : '') + ' + ' + d.baselineMonths + ' baseline';
+  document.getElementById('kpi-strip').innerHTML = [
+    {label:'Active SKUs',        val: d.activeSKUs,         cls:'c-blue',   sub: d.totalSKUs+' total tracked'},
+    {label:'⚠ Reorder now',     val: d.needsReorderCount,  cls:'c-red',    sub: 'below safety stock'},
+    {label:'▼ Below 50% avg',   val: d.belowHalfCount,     cls:'c-purple', sub: 'needs attention soon'},
+    {label:'Overstocked',        val: d.overstockedCount,   cls:'c-amber',  sub: 'skip / reduce buying'},
+    {label:"Today's issues",     val: d.todayTxns,          cls:'c-teal',   sub: fmt(d.todayIssued)+' units out today'},
+    {label:'Avg based on',       val: liveLabel,            cls:'c-orange', sub: 'updates monthly'},
+  ].map(k=>`
+    <div class="kpi">
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-val ${k.cls}" style="${typeof k.val==='string'?'font-size:13px;line-height:1.3;margin-top:2px':''}">${k.val}</div>
+      <div class="kpi-sub">${k.sub}</div>
+    </div>`).join('');
+}
+
+// ── Filters & sort ─────────────────────────────────────────
+function setFilter(f, btn, cls){
+  activeFilter = f;
+  document.querySelectorAll('.fbtn').forEach(b => b.classList.remove('on','on-red','on-amber','on-green','on-teal'));
+  btn.classList.add(cls);
+  applyFilters();
+}
+
+function applyFilters(){
+  if(!storeData) return;
+  const q     = (document.getElementById('search-box').value||'').toLowerCase();
+  const sort  = document.getElementById('sort-select').value;
+  let items   = storeData.items || [];
+
+  // Filter by view
+  if(activeFilter === 'reorder')    items = items.filter(i => i.needsReorder);
+  else if(activeFilter === 'half')       items = items.filter(i => i.belowHalfAlert && !i.needsReorder);
+  else if(activeFilter === 'overstock')  items = items.filter(i => i.isOverstocked);
+  else if(activeFilter === 'watch')      items = items.filter(i => i.isWatch && !i.isOverstocked && !i.needsReorder);
+  else if(activeFilter === 'ok')         items = items.filter(i => !i.needsReorder && !i.belowHalfAlert && !i.isOverstocked && !i.isWatch && i.runningAvgMonthly > 0);
+  else if(activeFilter === 'nodata')     items = items.filter(i => !i.runningAvgMonthly && !i.totalReceived && !i.openingStock);
+
+  // Search
+  if(q) items = items.filter(i =>
+    (i.name||'').toLowerCase().includes(q) ||
+    (i.code||'').toLowerCase().includes(q) ||
+    (i.spec||'').toLowerCase().includes(q)
+  );
+
+  // Sort
+  if(sort === 'stock_asc')    items = [...items].sort((a,b) => a.currentStock - b.currentStock);
+  else if(sort === 'stock_desc')   items = [...items].sort((a,b) => b.currentStock - a.currentStock);
+  else if(sort === 'consumption')  items = [...items].sort((a,b) => b.totalIssued - a.totalIssued);
+  else if(sort === 'reorder')      items = [...items].sort((a,b) => a.stockGap - b.stockGap);
+  else if(sort === 'name')         items = [...items].sort((a,b) => (a.name||'').localeCompare(b.name||''));
+
+  renderMain(items);
+}
+
+// ── Main render ────────────────────────────────────────────
+function renderMain(items){
+  if(!items.length){
+    document.getElementById('main-area').innerHTML =
+      '<div class="loader" style="color:var(--text3)">No items match.</div>';
+    return;
+  }
+
+  // Two-column panels for summary views + full table below
+  let topHtml = '';
+
+  if(activeFilter === 'all' && !document.getElementById('search-box').value){
+    topHtml = renderSummaryPanels();
+  }
+
+  const tableHtml = renderTable(items);
+  document.getElementById('main-area').innerHTML = topHtml + tableHtml;
+
+  // Render daily chart after DOM insert
+  if(activeFilter === 'all' && storeData.dailyOut){
+    renderDailyChart();
+  }
+}
+
+// ── Summary panels (shown on 'All' view) ──────────────────
+function renderSummaryPanels(){
+  const d     = storeData;
+  const items = d.items || [];
+
+  // Top 8 consumed
+  const topItems = [...items]
+    .filter(i => i.totalIssued > 0)
+    .sort((a,b) => b.totalIssued - a.totalIssued)
+    .slice(0, 8);
+
+  // Critical (reorder) items — top 8 by gap
+  const critItems = [...items]
+    .filter(i => i.needsReorder)
+    .sort((a,b) => a.stockGap - b.stockGap)
+    .slice(0, 8);
+
+  const topRows = topItems.map(i => `
+    <div class="item-row" onclick="toggleExpand('${i.code}')">
+      <div class="item-name">
+        <div class="item-title">${i.name||i.code}</div>
+        <div class="item-meta">${i.code}${i.spec?' · '+i.spec:''}</div>
+      </div>
+      <div class="item-right">
+        <div class="item-stock" style="color:var(--orange)">${fmt(i.totalIssued)} <span class="item-uom">${i.uom}</span></div>
+        <div class="item-uom">${fmt(i.avgWeeklyOut)}/wk</div>
+      </div>
+    </div>`).join('');
+
+  const critRows = critItems.length
+    ? critItems.map(i => `
+      <div class="item-row" onclick="toggleExpand('${i.code}')">
+        <div class="item-name">
+          <div class="item-title">${i.name||i.code}</div>
+          <div class="item-meta">${i.code}${i.spec?' · '+i.spec:''}</div>
+        </div>
+        <div class="item-right">
+          <div class="item-stock" style="color:var(--red)">${fmt(i.currentStock)} <span class="item-uom">${i.uom}</span></div>
+          <div class="item-uom">need ${fmt(i.safetyStock)}</div>
+        </div>
+      </div>`).join('')
+    : '<div style="padding:24px;text-align:center;color:var(--green);font-family:DM Mono,monospace;font-size:12px">✓ All items above safety stock</div>';
+
+  // Overstock top 8
+  const overItems = [...items]
+    .filter(i => i.isOverstocked)
+    .sort((a,b) => b.monthsRemaining - a.monthsRemaining)
+    .slice(0, 8);
+
+  const overRows = overItems.length
+    ? overItems.map(i => `
+      <div class="item-row" onclick="toggleExpand('${i.code}')">
+        <div class="item-name">
+          <div class="item-title">${i.name||i.code}</div>
+          <div class="item-meta">${i.code}</div>
+        </div>
+        <div class="item-right">
+          <div class="item-stock" style="color:var(--amber)">${fmt(i.monthsRemaining,1)} <span class="item-uom">months</span></div>
+          <div class="item-uom">stock left</div>
+        </div>
+      </div>`).join('')
+    : '<div style="padding:24px;text-align:center;color:var(--text3);font-family:DM Mono,monospace;font-size:12px">No overstocked items</div>';
+
+  return `
+  <div style="margin-bottom:12px">
+    <div class="panel-head" style="background:var(--bg2);border:1px solid var(--border);border-radius:12px 12px 0 0;padding:10px 16px">
+      <span class="panel-title">Daily consumption — ${new Date().toLocaleString('en-IN',{month:'long',year:'numeric'})}</span>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-top:none;border-radius:0 0 12px 12px">
+      <div class="chart-wrap" style="height:140px;position:relative">
+        <canvas id="daily-chart" role="img" aria-label="Daily material consumption chart for current month"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="two-col" style="margin-bottom:12px">
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">Top consumed (June 1+)</span>
+        <span class="panel-count">${topItems.length} items</span>
+      </div>
+      <div class="panel-body">${topRows||'<div class="loader" style="color:var(--text3);padding:1rem">No consumption data yet</div>'}</div>
+    </div>
+    <div class="panel">
+      <div class="panel-head" style="border-color:rgba(239,68,68,.2)">
+        <span class="panel-title" style="color:var(--red)">⚠ Reorder now</span>
+        <span class="panel-count">${d.needsReorderCount} items</span>
+      </div>
+      <div class="panel-body">${critRows}</div>
+    </div>
+  </div>
+  <div class="two-col">
+    <div class="panel">
+      <div class="panel-head" style="border-color:rgba(245,158,11,.2)">
+        <span class="panel-title" style="color:var(--amber)">Overstocked — skip buying</span>
+        <span class="panel-count">${d.overstockedCount} items</span>
+      </div>
+      <div class="panel-body">${overRows}</div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">Surge buffer status</span>
+        <span class="panel-count">25% surge · 3-wk lead time</span>
+      </div>
+      <div class="panel-body">
+        <div style="padding:16px">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+            <div style="text-align:center;min-width:60px">
+              <div style="font-size:28px;font-weight:500;color:var(--red)">${d.needsReorderCount}</div>
+              <div style="font-size:10px;color:var(--text3);font-family:DM Mono,monospace">need order</div>
+            </div>
+            <div style="flex:1">
+              <div style="height:6px;background:var(--bg4);border-radius:3px;overflow:hidden">
+                <div style="height:100%;border-radius:3px;background:var(--red);width:${Math.min(100,Math.round((d.needsReorderCount/Math.max(1,d.activeSKUs))*100))}%"></div>
+              </div>
+              <div style="font-size:10px;color:var(--text3);font-family:DM Mono,monospace;margin-top:4px">${Math.round((d.needsReorderCount/Math.max(1,d.activeSKUs))*100)}% of active SKUs below safety stock</div>
+            </div>
+            <div style="text-align:center;min-width:60px">
+              <div style="font-size:28px;font-weight:500;color:var(--green)">${d.activeSKUs - d.needsReorderCount}</div>
+              <div style="font-size:10px;color:var(--text3);font-family:DM Mono,monospace">adequate</div>
+            </div>
+          </div>
+          <div style="font-size:11px;color:var(--text3);border-top:1px solid var(--border);padding-top:10px;line-height:1.7;font-family:DM Mono,monospace">
+            Safety stock = consumption during 3-wk lead time + 25% surge buffer.<br>
+            Red items need ordering before a production spike hits.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div style="margin:16px 0 10px;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-family:DM Mono,monospace">
+    Full item list — ${(storeData.items||[]).length} SKUs
+  </div>`;
+}
+
+// ── Daily chart ────────────────────────────────────────────
+function renderDailyChart(){
+  const canvas = document.getElementById('daily-chart');
+  if(!canvas || !storeData.dailyOut) return;
+  if(dailyChart){ dailyChart.destroy(); dailyChart = null; }
+
+  const entries = Object.entries(storeData.dailyOut).sort((a,b) => a[0].localeCompare(b[0]));
+  if(!entries.length) return;
+
+  const labels = entries.map(([d]) => {
+    const dt = new Date(d);
+    return dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short'});
+  });
+  const values = entries.map(([,v]) => Math.round(v));
+
+  dailyChart = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Units issued',
+        data: values,
+        backgroundColor: 'rgba(240,84,35,0.7)',
+        borderRadius: 3,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: {
+          ticks: { color: '#555', font: { size: 10 }, maxRotation: 45, autoSkip: true },
+          grid: { display: false }
+        },
+        y: {
+          ticks: { color: '#555', font: { size: 10 },
+            callback: v => v >= 1000 ? (v/1000).toFixed(1)+'k' : v },
+          grid: { color: 'rgba(255,255,255,0.05)' }
+        }
+      }
+    }
+  });
+}
+
+// ── Full table ─────────────────────────────────────────────
+function renderTable(items){
+  if(!items.length) return '';
+
+  const rows = items.map(i => {
+    const isExp = expandedCode === i.code;
+    const sc    = stockColor(i);
+    const maxStock = Math.max(...(storeData.items||[]).map(x => x.currentStock), 1);
+    const barPct   = Math.min(100, Math.round((Math.max(0, i.currentStock) / maxStock) * 100));
+
+    const detailHtml = isExp ? renderDetail(i) : '';
+
+    return `
+      <tr onclick="toggleExpand('${i.code}')" style="cursor:pointer;${isExp?'background:var(--bg3)':''}">
+        <td class="name-col">${i.name||i.code}</td>
+        <td>${i.code}</td>
+        <td style="color:var(--text3)">${i.spec||'—'}</td>
+        <td>${i.uom||'—'}</td>
+        <td style="color:${sc};font-weight:500">${fmt(i.currentStock)}</td>
+        <td>${fmt(i.openingStock)}</td>
+        <td style="color:var(--teal)">${fmt(i.totalReceived)}</td>
+        <td style="color:var(--orange)">${fmt(i.totalIssued)}</td>
+        <td style="color:var(--text3)">${fmt(i.baselineAvgMonthly)}</td>
+        <td style="color:var(--orange)">${fmt(i.runningAvgMonthly)}</td>
+        <td>${fmt(i.reorderPoint)}</td>
+        <td style="color:${i.stockGap < 0 ? 'var(--red)':'var(--green)'}">${fmt(i.stockGap)}</td>
+        <td>${itemBadge(i)}</td>
+      </tr>
+      ${isExp ? `<tr><td colspan="13" style="padding:0">${detailHtml}</td></tr>` : ''}`;
+  }).join('');
+
+  return `
+  <div class="tbl-wrap">
+    <table class="full-table">
+      <thead>
+        <tr>
+          <th>Material</th>
+          <th>Code</th>
+          <th>Spec</th>
+          <th>UOM</th>
+          <th>Current stock</th>
+          <th>Opening (Jun 1)</th>
+          <th>Received</th>
+          <th>Issued</th>
+          <th>Baseline avg/mo</th>
+          <th>Running avg/mo</th>
+          <th>Reorder pt</th>
+          <th>Gap</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>`;
+}
+
+// ── Item detail expand ─────────────────────────────────────
+function renderDetail(item){
+  const received = (item.recentReceived||[]).slice(0,6);
+  const issued   = (item.recentIssued||[]).slice(0,6);
+
+  const recRows = received.length
+    ? received.map(r => `<tr><td>${fmtDate(r.date)}</td><td>${fmt(r.qty)} ${r.uom||item.uom}</td></tr>`).join('')
+    : '<tr><td colspan="2" style="color:var(--text3)">No receipts since Jun 1</td></tr>';
+
+  const issRows = issued.length
+    ? issued.map(r => `<tr><td>${fmtDate(r.date)}</td><td>${fmt(r.qty)}</td><td>${r.dept||'—'}</td><td style="max-width:120px;overflow:hidden;text-overflow:ellipsis">${r.project||'—'}</td></tr>`).join('')
+    : '<tr><td colspan="4" style="color:var(--text3)">No issues since Jun 1</td></tr>';
+
+  const halfThreshold = item.runningAvgMonthly * 0.5;
+  const alertHtml = item.belowHalfAlert
+    ? `<div style="background:var(--purple-dim);border:1px solid rgba(168,85,247,.2);border-radius:6px;padding:7px 10px;font-size:11px;color:var(--purple);font-family:'DM Mono',monospace;margin-bottom:10px">
+        ▼ Stock (${fmt(item.currentStock)} ${item.uom}) is below 50% of monthly avg (${fmt(halfThreshold)} ${item.uom}) — replenish soon
+       </div>` : '';
+
+  return `
+  <div class="item-detail">
+    ${alertHtml}
+    <div class="detail-grid">
+      <div class="detail-stat">
+        <div class="detail-stat-lbl">Baseline avg/mo</div>
+        <div class="detail-stat-val" style="color:var(--text2)">${fmt(item.baselineAvgMonthly)} <span style="font-size:11px;color:var(--text3)">${item.uom}</span></div>
+        <div style="font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:2px">Jan–May 2026</div>
+      </div>
+      <div class="detail-stat">
+        <div class="detail-stat-lbl">Running avg/mo</div>
+        <div class="detail-stat-val" style="color:var(--orange)">${fmt(item.runningAvgMonthly)} <span style="font-size:11px;color:var(--text3)">${item.uom}</span></div>
+        <div style="font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:2px">blended · updates monthly</div>
+      </div>
+      <div class="detail-stat">
+        <div class="detail-stat-lbl">Opening (Jun 1)</div>
+        <div class="detail-stat-val" style="color:var(--blue)">${fmt(item.openingStock)} <span style="font-size:11px;color:var(--text3)">${item.uom}</span></div>
+      </div>
+      <div class="detail-stat">
+        <div class="detail-stat-lbl">Received (Jun+)</div>
+        <div class="detail-stat-val" style="color:var(--teal)">${fmt(item.totalReceived)} <span style="font-size:11px;color:var(--text3)">${item.uom}</span></div>
+      </div>
+      <div class="detail-stat">
+        <div class="detail-stat-lbl">Issued (Jun+)</div>
+        <div class="detail-stat-val" style="color:var(--orange)">${fmt(item.totalIssued)} <span style="font-size:11px;color:var(--text3)">${item.uom}</span></div>
+      </div>
+      <div class="detail-stat">
+        <div class="detail-stat-lbl">Current stock</div>
+        <div class="detail-stat-val" style="color:${stockColor(item)}">${fmt(item.currentStock)} <span style="font-size:11px;color:var(--text3)">${item.uom}</span></div>
+      </div>
+      <div class="detail-stat">
+        <div class="detail-stat-lbl">Safety stock</div>
+        <div class="detail-stat-val">${fmt(item.safetyStock)} <span style="font-size:11px;color:var(--text3)">${item.uom}</span></div>
+        <div style="font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:2px">3-wk lead + 25% surge</div>
+      </div>
+      <div class="detail-stat">
+        <div class="detail-stat-lbl">Months remaining</div>
+        <div class="detail-stat-val" style="color:${item.monthsRemaining < 1 ? 'var(--red)': item.monthsRemaining > 3 ? 'var(--amber)':'var(--green)'}">${item.monthsRemaining >= 99 ? '∞' : fmt(item.monthsRemaining,1)}</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div>
+        <div class="section-lbl">Recent receipts</div>
+        <table class="mini-table">
+          <thead><tr><th>Date</th><th>Qty</th></tr></thead>
+          <tbody>${recRows}</tbody>
+        </table>
+      </div>
+      <div>
+        <div class="section-lbl">Recent issues</div>
+        <table class="mini-table">
+          <thead><tr><th>Date</th><th>Qty</th><th>Dept</th><th>Project</th></tr></thead>
+          <tbody>${issRows}</tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── Toggle expand ──────────────────────────────────────────
+function toggleExpand(code){
+  expandedCode = expandedCode === code ? null : code;
+  applyFilters();
+  // Scroll the expanded row into view if needed
+  if(expandedCode){
+    setTimeout(()=>{
+      const rows = document.querySelectorAll('tr');
+      rows.forEach(r => { if(r.innerHTML.includes(code)) r.scrollIntoView({behavior:'smooth',block:'nearest'}); });
+    }, 50);
+  }
+}
+
+// ── Boot ───────────────────────────────────────────────────
+loadData(false);
+scheduleRefresh();
+</script>
+</body>
+</html>
