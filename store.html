@@ -50,18 +50,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .ring-bg{fill:none;stroke:var(--border2);stroke-width:2.5}
 .ring-fill{fill:none;stroke:var(--orange);stroke-width:2.5;stroke-linecap:round;stroke-dasharray:44;stroke-dashoffset:44}
 
-/* ── KPI strip ── */
-.kpi-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:10px;flex-shrink:0}
-@media(max-width:1100px){.kpi-strip{grid-template-columns:repeat(3,1fr)}}
-.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;cursor:default}
-.kpi-label{font-size:9.5px;color:var(--text3);margin-bottom:3px;text-transform:uppercase;letter-spacing:.06em;font-family:'DM Mono',monospace}
-.kpi-val{font-size:20px;font-weight:500;line-height:1.1}
-.kpi-sub{font-size:9.5px;color:var(--text3);margin-top:2px;font-family:'DM Mono',monospace}
+/* ── Colour utilities ── */
 .c-blue{color:var(--blue)}.c-amber{color:var(--amber)}.c-green{color:var(--green)}
 .c-red{color:var(--red)}.c-purple{color:var(--purple)}.c-teal{color:var(--teal)}.c-orange{color:var(--orange)}
 
-/* ── Filter + toolbar ── */
-.toolbar{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;align-items:center;flex-shrink:0}
+/* ── Minimal status bar ── */
+.status-bar{display:flex;align-items:center;justify-content:space-between;padding:6px 2px;flex-shrink:0;gap:8px}
+
+/* ── Filter buttons (used inside drawer only) ── */
 .fbtn{font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 12px;border-radius:999px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;transition:all .15s}
 .fbtn:hover{color:var(--text);border-color:var(--border2)}
 .fbtn.on{background:var(--orange);border-color:var(--orange);color:#fff}
@@ -69,7 +65,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .fbtn.on-amber{background:var(--amber);border-color:var(--amber);color:#000}
 .fbtn.on-green{background:var(--green);border-color:var(--green);color:#000}
 .fbtn.on-teal{background:var(--teal);border-color:var(--teal);color:#000}
-.toolbar-right{margin-left:auto;display:flex;gap:6px;align-items:center}
 .sort-select{background:var(--bg3);color:var(--text2);border:1px solid var(--border);border-radius:999px;padding:5px 12px;font-size:12px;outline:none;cursor:pointer;font-family:'DM Sans',sans-serif}
 
 /* ── Table — fills ALL remaining height ── */
@@ -244,32 +239,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
   </div>
 </div>
 
-<!-- Page body: KPIs + filter + full-height table -->
+<!-- Page body: table is the full hero — no KPIs, no filters here -->
 <div class="page-body">
-  <div class="kpi-strip" id="kpi-strip">
-    <div class="loader" style="grid-column:1/-1"><span class="spin"></span>Loading…</div>
+  <!-- Minimal status bar: just item count + active filter indicator -->
+  <div class="status-bar" id="status-bar">
+    <span id="status-count" style="color:var(--text3);font-family:'DM Mono',monospace;font-size:11px">Loading…</span>
+    <span id="status-filter" style="font-family:'DM Mono',monospace;font-size:11px"></span>
   </div>
-
-  <div class="toolbar">
-    <button class="fbtn on" id="fbtn-all"       onclick="setFilter('all',this,'on')">All items</button>
-    <button class="fbtn"    id="fbtn-reorder"   onclick="setFilter('reorder',this,'on-red')">⚠ Reorder now</button>
-    <button class="fbtn"    id="fbtn-half"      onclick="setFilter('half',this,'on')">▼ Below 50%</button>
-    <button class="fbtn"    id="fbtn-overstock" onclick="setFilter('overstock',this,'on-amber')">Overstocked</button>
-    <button class="fbtn"    id="fbtn-watch"     onclick="setFilter('watch',this,'on')">Watch list</button>
-    <button class="fbtn"    id="fbtn-ok"        onclick="setFilter('ok',this,'on-green')">Adequate</button>
-    <button class="fbtn"    id="fbtn-nodata"    onclick="setFilter('nodata',this,'on-teal')">No activity</button>
-    <div class="toolbar-right">
-      <select class="sort-select" id="sort-select" onchange="applyFilters()">
-        <option value="stock_asc">Stock: Low → High</option>
-        <option value="stock_desc">Stock: High → Low</option>
-        <option value="consumption">Highest consumption</option>
-        <option value="reorder">Reorder gap first</option>
-        <option value="name">Name A–Z</option>
-      </select>
-    </div>
-  </div>
-
-  <div class="tbl-label" id="tbl-label">Full item list</div>
 
   <div class="tbl-outer">
     <div class="tbl-scroll" id="tbl-scroll">
@@ -334,7 +310,7 @@ let countdownTimer = null;
 let isFirstLoad    = true;
 let dailyChart     = null;
 const drawerOpen   = {v:false};
-const secOpen      = {top:false, reorder:false, avg:false, daily:false};
+const secOpen      = {kpis:false, filters:false, top:false, reorder:false, avg:false, daily:false};
 const detailCache  = {};
 
 // ── Helpers ──────────────────────────────────────────────────
@@ -427,26 +403,29 @@ function stopCountdown(){
   if(ring) ring.style.strokeDashoffset = 44;
 }
 
-// ── KPIs ─────────────────────────────────────────────────────
+// ── KPIs — stored for drawer use, also updates status bar ────
 function renderKPIs(){
   if(!storeData) return;
   const d = storeData;
-  const liveLabel = d.completeLiveMonths===0 ? 'Baseline · Jun active' : d.completeLiveMonths+' live + '+d.baselineMonths+' base';
-  document.getElementById('kpi-strip').innerHTML = [
-    {label:'Active SKUs',     val:d.activeSKUs,        cls:'c-blue',  sub:d.totalSKUs+' total tracked'},
-    {label:'⚠ Reorder now',  val:d.needsReorderCount, cls:'c-red',   sub:'below safety stock'},
-    {label:'▼ Below 50%',    val:d.belowHalfCount,    cls:'c-purple',sub:'needs attention soon'},
-    {label:'Overstocked',     val:d.overstockedCount,  cls:'c-amber', sub:'skip / reduce buying'},
-    {label:"Today's issues",  val:d.todayTxns===0?'—':d.todayTxns, cls:'c-teal', sub:d.todayTxns===0?'No entries yet':fmt(d.todayIssued)+' units out'},
-    {label:'Avg based on',    val:liveLabel,           cls:'c-orange',sub:'updates each full month'},
-  ].map(k=>`
-    <div class="kpi">
-      <div class="kpi-label">${k.label}</div>
-      <div class="kpi-val ${k.cls}" style="${typeof k.val==='string'&&k.val.length>4?'font-size:13px;line-height:1.4':''}">
-        ${k.val}
-      </div>
-      <div class="kpi-sub">${k.sub}</div>
-    </div>`).join('');
+  liveLabel = d.completeLiveMonths===0 ? 'Baseline · Jun active' : d.completeLiveMonths+' live + '+d.baselineMonths+' base';
+  const sc = document.getElementById('status-count');
+  if(sc) sc.textContent = `${d.totalSKUs} SKUs · ${d.activeSKUs} active`;
+  updateStatusFilter();
+}
+
+function updateStatusFilter(){
+  const sf = document.getElementById('status-filter');
+  if(!sf || !storeData) return;
+  const d = storeData;
+  const filterLabels = {
+    all:'All items', reorder:`⚠ ${d.needsReorderCount} need reorder`,
+    half:`▼ ${d.belowHalfCount} below 50%`, overstock:`${d.overstockedCount} overstocked`,
+    watch:'Watch list', ok:'Adequate', nodata:'No activity'
+  };
+  const label = filterLabels[activeFilter] || 'All items';
+  sf.innerHTML = activeFilter === 'all'
+    ? ''
+    : `<span style="background:var(--bg3);border:1px solid var(--border2);border-radius:999px;padding:2px 10px;color:var(--orange)">${label}</span>`;
 }
 
 // ── Drawer ───────────────────────────────────────────────────
@@ -534,6 +513,59 @@ function renderDrawer(){
     : '<div style="padding:24px;text-align:center;color:var(--text3);font-family:DM Mono,monospace;font-size:11px">No consumption recorded this month yet</div>';
 
   document.getElementById('drawer-body').innerHTML = `
+    <!-- KPI section -->
+    <div class="d-section">
+      <div class="d-sec-head" onclick="toggleSection('kpis')">
+        <span class="d-sec-title">Store health · KPIs</span>
+        <span class="d-sec-meta"><span>6 metrics</span><span id="dc-kpis">${secOpen.kpis?'▾':'▸'}</span></span>
+      </div>
+      <div class="d-sec-body" id="ds-kpis" style="display:${secOpen.kpis?'':'none'}">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px">
+          ${[
+            {label:'Active SKUs',    val:d.activeSKUs,        cls:'c-blue',  sub:d.totalSKUs+' tracked'},
+            {label:'⚠ Reorder now', val:d.needsReorderCount, cls:'c-red',   sub:'below safety stock'},
+            {label:'▼ Below 50%',   val:d.belowHalfCount,    cls:'c-purple',sub:'attention soon'},
+            {label:'Overstocked',    val:d.overstockedCount,  cls:'c-amber', sub:'skip buying'},
+            {label:"Today's issues", val:d.todayTxns===0?'—':d.todayTxns, cls:'c-teal', sub:d.todayTxns===0?'No entries yet':fmt(d.todayIssued)+' units'},
+            {label:'Avg based on',   val:liveLabel,           cls:'c-orange',sub:'updates monthly'},
+          ].map(k=>`
+            <div style="background:var(--bg3);border-radius:8px;padding:9px 10px">
+              <div style="font-size:9.5px;color:var(--text3);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">${k.label}</div>
+              <div class="${k.cls}" style="font-size:${typeof k.val==='string'&&k.val.length>6?'11px':'18px'};font-weight:500;line-height:1.2">${k.val}</div>
+              <div style="font-size:9.5px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:2px">${k.sub}</div>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter + sort section -->
+    <div class="d-section">
+      <div class="d-sec-head" onclick="toggleSection('filters')">
+        <span class="d-sec-title">Filter & sort</span>
+        <span class="d-sec-meta"><span id="active-filter-lbl">${activeFilter}</span><span id="dc-filters">${secOpen.filters?'▾':'▸'}</span></span>
+      </div>
+      <div class="d-sec-body" id="ds-filters" style="display:${secOpen.filters?'':'none'}">
+        <div style="padding:10px;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <button class="fbtn ${activeFilter==='all'?'on':''}"       id="fbtn-all"       onclick="setFilter('all',this,'on')">All items</button>
+            <button class="fbtn ${activeFilter==='reorder'?'on-red':''}" id="fbtn-reorder" onclick="setFilter('reorder',this,'on-red')">⚠ Reorder</button>
+            <button class="fbtn ${activeFilter==='half'?'on':''}"      id="fbtn-half"      onclick="setFilter('half',this,'on')">▼ Below 50%</button>
+            <button class="fbtn ${activeFilter==='overstock'?'on-amber':''}" id="fbtn-overstock" onclick="setFilter('overstock',this,'on-amber')">Overstocked</button>
+            <button class="fbtn ${activeFilter==='watch'?'on':''}"     id="fbtn-watch"     onclick="setFilter('watch',this,'on')">Watch list</button>
+            <button class="fbtn ${activeFilter==='ok'?'on-green':''}"  id="fbtn-ok"        onclick="setFilter('ok',this,'on-green')">Adequate</button>
+            <button class="fbtn ${activeFilter==='nodata'?'on-teal':''}" id="fbtn-nodata"  onclick="setFilter('nodata',this,'on-teal')">No activity</button>
+          </div>
+          <select class="sort-select" id="sort-select" onchange="currentSort=this.value;applyFilters()" style="width:100%;border-radius:8px;padding:6px 10px">
+            <option value="stock_asc"   ${currentSort==='stock_asc'   ?'selected':''}>Stock: Low → High</option>
+            <option value="stock_desc"  ${currentSort==='stock_desc'  ?'selected':''}>Stock: High → Low</option>
+            <option value="consumption" ${currentSort==='consumption' ?'selected':''}>Highest consumption</option>
+            <option value="reorder"     ${currentSort==='reorder'     ?'selected':''}>Reorder gap first</option>
+            <option value="name"        ${currentSort==='name'        ?'selected':''}>Name A–Z</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
     <div class="d-section">
       <div class="d-sec-head" onclick="toggleSection('top')">
         <span class="d-sec-title">Top consumed · Jun 1+</span>
@@ -593,33 +625,40 @@ function renderDailyChart(){
 function setFilter(f,btn,cls){
   activeFilter = f; currentPage = 1; expandedCode = null;
   document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on','on-red','on-amber','on-green','on-teal'));
-  btn.classList.add(cls);
+  if(btn) btn.classList.add(cls);
+  // Update the drawer's filter label
+  const afl = document.getElementById('active-filter-lbl');
+  if(afl) afl.textContent = f;
   applyFilters();
 }
 
+let currentSort = 'stock_asc';
+let liveLabel   = 'Baseline only';
+
 function applyFilters(){
   if(!storeData) return;
-  const q    = (document.getElementById('search-box').value||'').toLowerCase();
-  const sort = document.getElementById('sort-select').value;
+  const searchEl = document.getElementById('search-box');
+  const sortEl   = document.getElementById('sort-select');
+  const q    = searchEl ? searchEl.value.toLowerCase() : '';
+  if(sortEl) currentSort = sortEl.value;
   let items  = storeData.items||[];
 
-  if(activeFilter==='reorder')    items=items.filter(i=>i.needsReorder);
-  else if(activeFilter==='half')  items=items.filter(i=>i.belowHalfAlert&&!i.needsReorder);
-  else if(activeFilter==='overstock') items=items.filter(i=>i.isOverstocked);
-  else if(activeFilter==='watch') items=items.filter(i=>i.isWatch&&!i.isOverstocked&&!i.needsReorder);
-  else if(activeFilter==='ok')    items=items.filter(i=>!i.needsReorder&&!i.belowHalfAlert&&!i.isOverstocked&&!i.isWatch&&i.runningAvgMonthly>0);
-  else if(activeFilter==='nodata')items=items.filter(i=>!i.runningAvgMonthly&&!i.totalReceived&&!i.openingStock);
+  if(activeFilter==='reorder')         items=items.filter(i=>i.needsReorder);
+  else if(activeFilter==='half')       items=items.filter(i=>i.belowHalfAlert&&!i.needsReorder);
+  else if(activeFilter==='overstock')  items=items.filter(i=>i.isOverstocked);
+  else if(activeFilter==='watch')      items=items.filter(i=>i.isWatch&&!i.isOverstocked&&!i.needsReorder);
+  else if(activeFilter==='ok')         items=items.filter(i=>!i.needsReorder&&!i.belowHalfAlert&&!i.isOverstocked&&!i.isWatch&&i.runningAvgMonthly>0);
+  else if(activeFilter==='nodata')     items=items.filter(i=>!i.runningAvgMonthly&&!i.totalReceived&&!i.openingStock);
 
   if(q) items=items.filter(i=>(i.name||'').toLowerCase().includes(q)||(i.code||'').toLowerCase().includes(q));
 
-  if(sort==='stock_asc')     items=[...items].sort((a,b)=>a.currentStock-b.currentStock);
-  else if(sort==='stock_desc')    items=[...items].sort((a,b)=>b.currentStock-a.currentStock);
-  else if(sort==='consumption')   items=[...items].sort((a,b)=>b.totalIssued-a.totalIssued);
-  else if(sort==='reorder')       items=[...items].sort((a,b)=>a.stockGap-b.stockGap);
-  else if(sort==='name')          items=[...items].sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+  if(currentSort==='stock_asc')        items=[...items].sort((a,b)=>a.currentStock-b.currentStock);
+  else if(currentSort==='stock_desc')  items=[...items].sort((a,b)=>b.currentStock-a.currentStock);
+  else if(currentSort==='consumption') items=[...items].sort((a,b)=>b.totalIssued-a.totalIssued);
+  else if(currentSort==='reorder')     items=[...items].sort((a,b)=>a.stockGap-b.stockGap);
+  else if(currentSort==='name')        items=[...items].sort((a,b)=>(a.name||'').localeCompare(b.name||''));
 
   filteredItems = items;
-  // Reset to page 1 if current page is out of range
   const totalPages = Math.ceil(items.length/PAGE_SIZE);
   if(currentPage > totalPages) currentPage = 1;
   renderPage();
@@ -641,9 +680,10 @@ function renderPage(){
   const start      = (currentPage-1)*PAGE_SIZE;
   const pageItems  = filteredItems.slice(start, start+PAGE_SIZE);
 
-  // Label
-  document.getElementById('tbl-label').textContent =
-    `${total} item${total!==1?'s':''} · page ${currentPage} of ${totalPages}`;
+  // Label — update status bar count
+  const sc = document.getElementById('status-count');
+  if(sc) sc.textContent = `${total} item${total!==1?'s':''} · page ${currentPage} of ${totalPages}`;
+  updateStatusFilter();
 
   // Rows
   if(!pageItems.length){
@@ -697,12 +737,9 @@ function renderPage(){
 
 // ── Focus from drawer ─────────────────────────────────────────
 function focusItem(code){
-  activeFilter = 'all';
-  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on','on-red','on-amber','on-green','on-teal'));
-  document.getElementById('fbtn-all').classList.add('on');
+  setFilter('all', null, 'on');
   expandedCode = code;
-  // Find which page the item is on
-  const allItems = storeData.items||[];
+  const allItems = filteredItems.length ? filteredItems : (storeData.items||[]);
   const idx = allItems.findIndex(i=>i.code===code);
   currentPage = idx>=0 ? Math.ceil((idx+1)/PAGE_SIZE) : 1;
   applyFilters();
