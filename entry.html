@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Floor Entry · Artenspace</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0f0f0f;--bg2:#161616;--bg3:#1e1e1e;--bg4:#252525;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);
+  --text:#f0f0f0;--text2:#999;--text3:#555;
+  --blue:#3b82f6;--blue-dim:rgba(59,130,246,0.13);
+  --amber:#f59e0b;--amber-dim:rgba(245,158,11,0.13);
+  --green:#22c55e;--green-dim:rgba(34,197,94,0.13);
+  --red:#ef4444;--red-dim:rgba(239,68,68,0.13);
+  --orange:#f05423;
+  --radius:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+
+/* ── Shell ── */
+.shell{max-width:760px;margin:0 auto;padding:28px 20px 60px}
+
+/* ── Header ── */
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;flex-wrap:wrap;gap:12px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-logo{height:20px;width:auto}
+.brand-divider{width:1px;height:16px;background:var(--border2)}
+.brand-sub{font-size:11px;font-family:'DM Mono',monospace;color:var(--text3)}
+.header-link{font-size:12px;color:var(--text3);text-decoration:none;padding:6px 12px;border:1px solid var(--border);border-radius:999px;transition:all .15s}
+.header-link:hover{color:var(--text);border-color:var(--border2)}
+
+/* ── Page title ── */
+.page-title{font-size:22px;font-weight:600;margin-bottom:4px}
+.page-sub{font-size:13px;color:var(--text3);margin-bottom:28px}
+
+/* ── Step indicator ── */
+.steps{display:flex;align-items:center;gap:0;margin-bottom:32px}
+.step{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text3);font-family:'DM Mono',monospace}
+.step-num{width:22px;height:22px;border-radius:50%;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;transition:all .2s}
+.step.active .step-num{background:var(--blue);border-color:var(--blue);color:#fff}
+.step.done .step-num{background:var(--green);border-color:var(--green);color:#fff}
+.step.active{color:var(--text2)}
+.step-line{flex:1;height:1px;background:var(--border);margin:0 8px;min-width:20px}
+.step-line.done{background:var(--green)}
+
+/* ── Card ── */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+.card-title{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-family:'DM Mono',monospace;margin-bottom:14px}
+
+/* ── Search ── */
+.search-wrap{position:relative}
+.search-input{width:100%;font-family:'DM Sans',sans-serif;font-size:14px;padding:11px 14px 11px 38px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--bg3);color:var(--text);outline:none;transition:border-color .15s}
+.search-input:focus{border-color:var(--blue)}
+.search-input::placeholder{color:var(--text3)}
+.search-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:14px;pointer-events:none}
+.search-clear{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--text3);cursor:pointer;font-size:16px;line-height:1;display:none}
+.search-clear.vis{display:block}
+
+/* ── Project list ── */
+.proj-list{margin-top:10px;max-height:340px;overflow-y:auto;border-radius:var(--radius);border:1px solid var(--border)}
+.proj-list:empty{display:none}
+.proj-item{padding:12px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .1s;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.proj-item:last-child{border-bottom:none}
+.proj-item:hover{background:var(--bg3)}
+.proj-item.selected{background:var(--blue-dim);border-left:2px solid var(--blue)}
+.proj-name{font-size:13px;font-weight:500}
+.proj-meta{font-size:11px;color:var(--text3);margin-top:2px;font-family:'DM Mono',monospace}
+.proj-poc{font-size:11px;color:var(--text3);text-align:right;white-space:nowrap}
+
+/* ── Selected project display ── */
+.selected-proj{background:var(--blue-dim);border:1px solid rgba(59,130,246,.25);border-radius:var(--radius);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.sel-proj-name{font-size:14px;font-weight:500}
+.sel-proj-meta{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace;margin-top:2px}
+.change-btn{font-size:11px;color:var(--text3);cursor:pointer;padding:4px 10px;border:1px solid var(--border2);border-radius:999px;white-space:nowrap;background:transparent;font-family:'DM Mono',monospace;transition:all .15s}
+.change-btn:hover{color:var(--text);border-color:var(--text2)}
+
+/* ── Product grid ── */
+.prod-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-top:2px}
+.prod-chip{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;cursor:pointer;transition:all .15s;display:flex;align-items:flex-start;gap:8px}
+.prod-chip:hover{border-color:var(--border2);background:var(--bg4)}
+.prod-chip.selected{background:var(--blue-dim);border-color:rgba(59,130,246,.4)}
+.prod-check{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--border2);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .15s}
+.prod-chip.selected .prod-check{background:var(--blue);border-color:var(--blue);color:#fff}
+.prod-info{flex:1;min-width:0}
+.prod-chip-name{font-size:12px;font-weight:500;line-height:1.3}
+.prod-chip-code{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:2px}
+
+/* ── Select all ── */
+.select-all-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.select-all-btn{font-size:11px;color:var(--text3);cursor:pointer;padding:3px 10px;border:1px solid var(--border);border-radius:999px;background:transparent;font-family:'DM Mono',monospace;transition:all .15s}
+.select-all-btn:hover{color:var(--text);border-color:var(--border2)}
+.selected-count{font-size:11px;color:var(--blue);font-family:'DM Mono',monospace}
+
+/* ── Department grid ── */
+.dept-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.dept-chip{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 14px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:8px}
+.dept-chip:hover{border-color:var(--border2);background:var(--bg4)}
+.dept-chip.selected{background:var(--blue-dim);border-color:rgba(59,130,246,.4)}
+.dept-dot{width:8px;height:8px;border-radius:50%;background:var(--border2);flex-shrink:0;transition:background .15s}
+.dept-chip.selected .dept-dot{background:var(--blue)}
+.dept-name{font-size:13px}
+.dept-pct{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;margin-left:auto}
+
+/* ── Comment ── */
+.comment-input{width:100%;font-family:'DM Sans',sans-serif;font-size:13px;padding:12px 14px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--bg3);color:var(--text);outline:none;resize:vertical;min-height:80px;transition:border-color .15s;line-height:1.5}
+.comment-input:focus{border-color:var(--blue)}
+.comment-input::placeholder{color:var(--text3)}
+.char-count{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;text-align:right;margin-top:5px}
+
+/* ── Summary ── */
+.summary-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px}
+.summary-row{display:flex;justify-content:space-between;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--border);gap:12px}
+.summary-row:last-child{border-bottom:none}
+.summary-label{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;white-space:nowrap}
+.summary-val{font-size:13px;text-align:right;font-weight:500}
+.summary-products{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end}
+.summary-prod-tag{font-size:10px;padding:2px 8px;border-radius:999px;background:var(--blue-dim);color:var(--blue);border:1px solid rgba(59,130,246,.2);font-family:'DM Mono',monospace}
+
+/* ── Dept badge ── */
+.dept-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:3px 10px;border-radius:999px;background:var(--blue-dim);color:var(--blue);border:1px solid rgba(59,130,246,.2)}
+.dept-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--blue)}
+
+/* ── Buttons ── */
+.btn-row{display:flex;gap:10px;margin-top:4px}
+.btn{font-family:'DM Sans',sans-serif;font-size:13px;padding:10px 20px;border-radius:var(--radius);border:none;cursor:pointer;font-weight:500;transition:all .2s;white-space:nowrap}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{background:#2563eb}
+.btn-primary:disabled{background:var(--bg4);color:var(--text3);cursor:not-allowed}
+.btn-secondary{background:transparent;color:var(--text2);border:1px solid var(--border2)}
+.btn-secondary:hover{background:var(--bg3);color:var(--text)}
+.btn-full{width:100%}
+
+/* ── Success state ── */
+.success-card{background:var(--green-dim);border:1px solid rgba(34,197,94,.25);border-radius:var(--radius);padding:20px;text-align:center}
+.success-icon{font-size:32px;margin-bottom:8px}
+.success-title{font-size:16px;font-weight:600;color:var(--green);margin-bottom:4px}
+.success-sub{font-size:12px;color:var(--text2)}
+
+/* ── Loading / Error ── */
+.loader{padding:20px;text-align:center;color:var(--text3);font-size:13px}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.err{font-size:12px;color:var(--red);background:var(--red-dim);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:10px 12px;margin-top:8px}
+
+/* ── Empty state ── */
+.empty{font-size:12px;color:var(--text3);padding:16px;text-align:center}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="brand">
+      <svg class="brand-logo" viewBox="0 0 2260.8 629.4" xmlns="http://www.w3.org/2000/svg">
+        <style>.st0{fill:#F05423;}</style>
+        <g><g>
+          <path class="st0" d="M1329.1,402.7c126.7,0,253.5,0,381.1,0c0-21,0-41.9,0-63.9c-102.3,0-204.3,0-307,0c0-20.5,0-39.8,0-60.3c79.1,0,158.2,0,237.8,0c0-22,0-42.9,0-64.9c-79.4,0-158.5,0-237.9,0c0-20.4,0-39.8,0-60.2c102.6,0,204.6,0,307.2,0c0-21.9,0-42.9,0-64.8c-127.5,0-253.9,0-381.2,0C1329.1,193.3,1329.1,297.6,1329.1,402.7z"/>
+          <path class="st0" d="M903.9,88.5v65.3c51.5-0.2,103.1-0.1,154.5-0.1c2.1,0,4.2,0.3,7.3,0.5v248.9h0.1h73.5h0.1V154.2c3.1-0.2,5.2-0.5,7.3-0.5c51.5,0,103.1-0.1,154.5,0.1V88.5c-66.3-0.3-132.5,0-198.8,0.1C1036.4,88.5,970.2,88.2,903.9,88.5z"/>
+          <path class="st0" d="M208.2,88.4L94.1,402.7h78.8l101.6-280c4.2-11.6,20.6-11.6,24.8,0l101.6,280h78.8L365.7,88.4H208.2z"/>
+          <path class="st0" d="M685.8,277.1h105.4c52.1,0,94.4-42.3,94.4-94.4s-42.3-94.4-94.4-94.4H506v314.3h74V152.9h201.9c16.4,0,29.8,13.3,29.8,29.8c0,16.4-13.3,29.8-29.8,29.8H680.4c-39,0-70.5,31.6-70.5,70.5c0,32.6,22.3,60.9,54,68.6l194.4,50.4l15.2-62.8l-189.1-49.1C676.7,288.2,678,277.1,685.8,277.1z"/>
+          <path class="st0" d="M2092.7,88.3l0.1,280c-4.2,11.6-20.6,11.6-24.8,0l-55.9-95.3L1903.7,88.3h-0.1h-78.6h-0.1h-0.1h-78.6v314.3h74l-0.1-280c4.2-11.6,20.6-11.6,24.8,0l54.3,92.5l109.9,187.5h0.1h78.6h0.1h0.1h78.6V88.3H2092.7z"/>
+        </g></g>
+      </svg>
+      <div class="brand-divider"></div>
+      <div class="brand-sub">Floor Entry</div>
+    </div>
+    <a class="header-link" href="viewer.html">&#128202; Viewer Dashboard</a>
+  </div>
+
+  <div class="page-title">Daily Floor Update</div>
+  <div class="page-sub">Log current department and observations for active products.</div>
+
+  <!-- Step indicator -->
+  <div class="steps">
+    <div class="step active" id="step-1"><div class="step-num">1</div><span>Project</span></div>
+    <div class="step-line" id="line-1"></div>
+    <div class="step" id="step-2"><div class="step-num">2</div><span>Products</span></div>
+    <div class="step-line" id="line-2"></div>
+    <div class="step" id="step-3"><div class="step-num">3</div><span>Department</span></div>
+    <div class="step-line" id="line-3"></div>
+    <div class="step" id="step-4"><div class="step-num">4</div><span>Comment</span></div>
+    <div class="step-line" id="line-4"></div>
+    <div class="step" id="step-5"><div class="step-num">5</div><span>Submit</span></div>
+  </div>
+
+  <!-- Main form -->
+  <div id="form-area"></div>
+
+</div>
+
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbxw89g6fbnFJdJju5gPlhyBj1uCd8Ng92kh3UxtAAowk5S9RsmX6xZ6nRP1EMGslGGg/exec';
+
+const DEPT_PIPELINE = [
+  { name: 'Designing',        pct: 5   },
+  { name: 'Design Approval',  pct: 10  },
+  { name: 'Production File',  pct: 15  },
+  { name: 'Solid Wood',       pct: 30  },
+  { name: 'Metal',            pct: 40  },
+  { name: 'Upholstery',       pct: 55  },
+  { name: 'Surface Finish',   pct: 70  },
+  { name: 'Assembly',         pct: 80  },
+  { name: 'QC',               pct: 88  },
+  { name: 'Packing',          pct: 94  },
+  { name: 'Dispatch',         pct: 97  },
+  { name: 'Installation',     pct: 99  },
+  { name: 'Handover',         pct: 100 },
+];
+
+// State
+let allProjects = [];
+let filteredProjects = [];
+let selectedProject = null;
+let allProducts = [];
+let selectedProducts = new Set();
+let selectedDept = '';
+let comment = '';
+let currentStep = 1;
+let isSubmitting = false;
+
+// ── Init ──
+async function init() {
+  renderStep();
+  await loadProjects();
+}
+
+async function loadProjects() {
+  try {
+    const res = await fetch(API + '?type=projects&t=' + Date.now());
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    allProjects = data.projects || [];
+    filteredProjects = [...allProjects];
+    renderStep();
+  } catch(e) {
+    document.getElementById('form-area').innerHTML =
+      '<div class="card"><div class="err">Failed to load projects: ' + e.message + '</div></div>';
+  }
+}
+
+// ── Step renderer ──
+function renderStep() {
+  updateStepIndicator();
+  const area = document.getElementById('form-area');
+
+  if (currentStep === 1) area.innerHTML = renderStep1();
+  else if (currentStep === 2) area.innerHTML = renderStep2();
+  else if (currentStep === 3) area.innerHTML = renderStep3();
+  else if (currentStep === 4) area.innerHTML = renderStep4();
+  else if (currentStep === 5) area.innerHTML = renderStep5();
+
+  // Attach listeners after render
+  if (currentStep === 1) attachStep1Listeners();
+  if (currentStep === 4) attachStep4Listeners();
+}
+
+function updateStepIndicator() {
+  for (let i = 1; i <= 5; i++) {
+    const el = document.getElementById('step-' + i);
+    el.classList.remove('active', 'done');
+    if (i < currentStep) el.classList.add('done');
+    else if (i === currentStep) el.classList.add('active');
+  }
+  for (let i = 1; i <= 4; i++) {
+    const line = document.getElementById('line-' + i);
+    line.classList.toggle('done', i < currentStep);
+  }
+}
+
+// ── Step 1: Project search ──
+function renderStep1() {
+  const count = allProjects.length;
+  return `
+    <div class="card">
+      <div class="card-title">Select Project <span style="color:var(--text3);font-weight:400">(${count} active)</span></div>
+      <div class="search-wrap">
+        <span class="search-icon">&#128269;</span>
+        <input class="search-input" id="proj-search" type="text" placeholder="Search by project name or code..." autocomplete="off" value="">
+        <span class="search-clear" id="search-clear" onclick="clearSearch()">&#215;</span>
+      </div>
+      <div class="proj-list" id="proj-list">${renderProjItems(filteredProjects.slice(0, 30))}</div>
+    </div>`;
+}
+
+function renderProjItems(projects) {
+  if (!projects.length) return '<div class="empty">No projects found</div>';
+  return projects.map(p => `
+    <div class="proj-item" onclick="selectProject('${p.code}')">
+      <div>
+        <div class="proj-name">${p.name || p.code}</div>
+        <div class="proj-meta">${p.code} · ${p.products.filter(pr=>pr.active).length} active product(s)</div>
+      </div>
+      <div class="proj-poc">
+        ${p.pmc ? '<div>' + p.pmc + '</div>' : ''}
+        ${p.bd  ? '<div style="color:var(--text3)">' + p.bd + '</div>' : ''}
+      </div>
+    </div>`).join('');
+}
+
+function attachStep1Listeners() {
+  const input = document.getElementById('proj-search');
+  if (!input) return;
+  input.addEventListener('input', () => {
+    const q = input.value.toLowerCase().trim();
+    document.getElementById('search-clear').classList.toggle('vis', q.length > 0);
+    filteredProjects = q
+      ? allProjects.filter(p => p.name.toLowerCase().includes(q) || p.code.toLowerCase().includes(q))
+      : [...allProjects];
+    document.getElementById('proj-list').innerHTML = renderProjItems(filteredProjects.slice(0, 30));
+  });
+  input.focus();
+}
+
+function clearSearch() {
+  document.getElementById('proj-search').value = '';
+  document.getElementById('search-clear').classList.remove('vis');
+  filteredProjects = [...allProjects];
+  document.getElementById('proj-list').innerHTML = renderProjItems(filteredProjects.slice(0, 30));
+  document.getElementById('proj-search').focus();
+}
+
+async function selectProject(code) {
+  selectedProject = allProjects.find(p => p.code === code);
+  selectedProducts.clear();
+  // Load products
+  try {
+    const res = await fetch(API + '?type=products&code=' + code + '&t=' + Date.now());
+    const data = await res.json();
+    allProducts = data.products || [];
+  } catch(e) {
+    allProducts = selectedProject.products.filter(p => p.active);
+  }
+  currentStep = 2;
+  renderStep();
+}
+
+// ── Step 2: Product selection ──
+function renderStep2() {
+  const proj = selectedProject;
+  const prods = allProducts;
+  const selCount = selectedProducts.size;
+
+  return `
+    <div class="card" style="margin-bottom:12px">
+      <div class="selected-proj">
+        <div>
+          <div class="sel-proj-name">${proj.name || proj.code}</div>
+          <div class="sel-proj-meta">${proj.code} ${proj.pmc ? '· PMC: ' + proj.pmc : ''} ${proj.bd ? '· BD: ' + proj.bd : ''}</div>
+        </div>
+        <button class="change-btn" onclick="changeProject()">Change</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="select-all-row">
+        <div class="card-title" style="margin-bottom:0">Select Products</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          ${selCount > 0 ? '<span class="selected-count">' + selCount + ' selected</span>' : ''}
+          <button class="select-all-btn" onclick="toggleSelectAll()">${selCount === prods.length ? 'Deselect All' : 'Select All'}</button>
+        </div>
+      </div>
+      ${prods.length === 0
+        ? '<div class="empty">No active products found for this project.</div>'
+        : '<div class="prod-grid">' + prods.map(p => `
+          <div class="prod-chip${selectedProducts.has(p.code) ? ' selected' : ''}" onclick="toggleProduct('${p.code}')">
+            <div class="prod-check">${selectedProducts.has(p.code) ? '✓' : ''}</div>
+            <div class="prod-info">
+              <div class="prod-chip-name">${p.name || p.code}</div>
+              <div class="prod-chip-code">${p.code}${p.qty ? ' · Qty ' + p.qty : ''}</div>
+            </div>
+          </div>`).join('') + '</div>'
+      }
+      <div class="btn-row" style="margin-top:16px">
+        <button class="btn btn-secondary" onclick="goBack()">← Back</button>
+        <button class="btn btn-primary" onclick="goToStep3()" ${selectedProducts.size === 0 ? 'disabled' : ''}>
+          Continue with ${selectedProducts.size || ''} product${selectedProducts.size !== 1 ? 's' : ''} →
+        </button>
+      </div>
+    </div>`;
+}
+
+function toggleProduct(code) {
+  if (selectedProducts.has(code)) selectedProducts.delete(code);
+  else selectedProducts.add(code);
+  renderStep();
+}
+
+function toggleSelectAll() {
+  if (selectedProducts.size === allProducts.length) {
+    selectedProducts.clear();
+  } else {
+    allProducts.forEach(p => selectedProducts.add(p.code));
+  }
+  renderStep();
+}
+
+function goToStep3() {
+  if (selectedProducts.size === 0) return;
+  currentStep = 3;
+  renderStep();
+}
+
+// ── Step 3: Department ──
+function renderStep3() {
+  return `
+    <div class="card" style="margin-bottom:12px">
+      <div class="selected-proj">
+        <div>
+          <div class="sel-proj-name">${selectedProject.name || selectedProject.code}</div>
+          <div class="sel-proj-meta">${selectedProducts.size} product${selectedProducts.size !== 1 ? 's' : ''} selected</div>
+        </div>
+        <button class="change-btn" onclick="changeProject()">Change project</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Current Department / Stage</div>
+      <div class="dept-grid">
+        ${DEPT_PIPELINE.map(d => `
+          <div class="dept-chip${selectedDept === d.name ? ' selected' : ''}" onclick="selectDept('${d.name}')">
+            <div class="dept-dot"></div>
+            <span class="dept-name">${d.name}</span>
+            <span class="dept-pct">${d.pct}%</span>
+          </div>`).join('')}
+      </div>
+      <div class="btn-row" style="margin-top:16px">
+        <button class="btn btn-secondary" onclick="goBack()">← Back</button>
+        <button class="btn btn-primary" onclick="goToStep4()" ${!selectedDept ? 'disabled' : ''}>
+          Continue →
+        </button>
+      </div>
+    </div>`;
+}
+
+function selectDept(name) {
+  selectedDept = name;
+  renderStep();
+}
+
+function goToStep4() {
+  if (!selectedDept) return;
+  currentStep = 4;
+  renderStep();
+}
+
+// ── Step 4: Comment ──
+function renderStep4() {
+  return `
+    <div class="card" style="margin-bottom:12px">
+      <div class="selected-proj">
+        <div>
+          <div class="sel-proj-name">${selectedProject.name || selectedProject.code}</div>
+          <div class="sel-proj-meta" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px">
+            <span>${selectedProducts.size} product${selectedProducts.size !== 1 ? 's' : ''}</span>
+            <span>·</span>
+            <span class="dept-badge"><span class="dept-badge-dot"></span>${selectedDept}</span>
+          </div>
+        </div>
+        <button class="change-btn" onclick="changeProject()">Start over</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Observation / Comment <span style="color:var(--text3);font-weight:400">(optional)</span></div>
+      <textarea class="comment-input" id="comment-input" placeholder="e.g. Frame ready, polishing started. Delivery of fabric pending for ottoman..." maxlength="500">${comment}</textarea>
+      <div class="char-count"><span id="char-count">${comment.length}</span>/500</div>
+      <div class="btn-row" style="margin-top:16px">
+        <button class="btn btn-secondary" onclick="goBack()">← Back</button>
+        <button class="btn btn-primary" onclick="goToStep5()">Review & Submit →</button>
+      </div>
+    </div>`;
+}
+
+function attachStep4Listeners() {
+  const ta = document.getElementById('comment-input');
+  if (!ta) return;
+  ta.addEventListener('input', () => {
+    comment = ta.value;
+    document.getElementById('char-count').textContent = comment.length;
+  });
+}
+
+function goToStep5() {
+  const ta = document.getElementById('comment-input');
+  if (ta) comment = ta.value;
+  currentStep = 5;
+  renderStep();
+}
+
+// ── Step 5: Review & Submit ──
+function renderStep5() {
+  const selectedProdList = allProducts.filter(p => selectedProducts.has(p.code));
+  return `
+    <div class="card">
+      <div class="card-title">Review Entry</div>
+      <div class="summary-card">
+        <div class="summary-row">
+          <span class="summary-label">Project</span>
+          <span class="summary-val">${selectedProject.name || selectedProject.code}<br><span style="font-size:11px;font-family:DM Mono,monospace;color:var(--text3);font-weight:400">${selectedProject.code}</span></span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">Products (${selectedProdList.length})</span>
+          <div class="summary-products">
+            ${selectedProdList.map(p => `<span class="summary-prod-tag">${p.name || p.code}</span>`).join('')}
+          </div>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">Department</span>
+          <span class="summary-val"><span class="dept-badge"><span class="dept-badge-dot"></span>${selectedDept}</span></span>
+        </div>
+        ${comment ? `<div class="summary-row">
+          <span class="summary-label">Comment</span>
+          <span class="summary-val" style="font-size:12px;font-weight:400;color:var(--text2);max-width:300px;text-align:right">${comment}</span>
+        </div>` : ''}
+        <div class="summary-row">
+          <span class="summary-label">Time</span>
+          <span class="summary-val" style="font-size:12px;font-weight:400;color:var(--text2)">${new Date().toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</span>
+        </div>
+      </div>
+      <div id="submit-err"></div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="goBack()" id="back-btn">← Edit</button>
+        <button class="btn btn-primary btn-full" onclick="submitEntry()" id="submit-btn">
+          Submit ${selectedProdList.length} entr${selectedProdList.length !== 1 ? 'ies' : 'y'} →
+        </button>
+      </div>
+    </div>`;
+}
+
+async function submitEntry() {
+  if (isSubmitting) return;
+  isSubmitting = true;
+  const submitBtn = document.getElementById('submit-btn');
+  const backBtn   = document.getElementById('back-btn');
+  submitBtn.innerHTML = '<span class="spin"></span>Submitting...';
+  submitBtn.disabled = true;
+  backBtn.disabled = true;
+
+  const selectedProdList = allProducts.filter(p => selectedProducts.has(p.code));
+  const errors = [];
+
+  for (const prod of selectedProdList) {
+    try {
+      const res = await fetch(API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'entry',
+          projectCode:  selectedProject.code,
+          projectName:  selectedProject.name || selectedProject.code,
+          productCode:  prod.code,
+          productName:  prod.name || prod.code,
+          department:   selectedDept,
+          comment:      comment,
+        }),
+      });
+      const data = await res.json();
+      if (data.error) errors.push(prod.name + ': ' + data.error);
+    } catch(e) {
+      errors.push(prod.name + ': ' + e.message);
+    }
+  }
+
+  isSubmitting = false;
+
+  if (errors.length) {
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = 'Retry Submit →';
+    backBtn.disabled = false;
+    document.getElementById('submit-err').innerHTML =
+      '<div class="err">Some entries failed:<br>' + errors.join('<br>') + '</div>';
+    return;
+  }
+
+  // Success
+  showSuccess(selectedProdList.length);
+}
+
+function showSuccess(count) {
+  document.getElementById('form-area').innerHTML = `
+    <div class="success-card">
+      <div class="success-icon">✅</div>
+      <div class="success-title">${count} entr${count !== 1 ? 'ies' : 'y'} logged</div>
+      <div class="success-sub" style="margin-bottom:20px">${selectedProject.name} · ${selectedDept}</div>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="logAnother()">Log another project</button>
+        <button class="btn btn-secondary" onclick="logSameProject()">Same project, different update</button>
+      </div>
+    </div>`;
+  // Reset steps
+  for (let i = 1; i <= 5; i++) {
+    const el = document.getElementById('step-' + i);
+    el.classList.remove('active');
+    el.classList.add('done');
+  }
+}
+
+function logAnother() {
+  selectedProject = null;
+  allProducts = [];
+  selectedProducts.clear();
+  selectedDept = '';
+  comment = '';
+  currentStep = 1;
+  filteredProjects = [...allProjects];
+  renderStep();
+}
+
+function logSameProject() {
+  selectedProducts.clear();
+  selectedDept = '';
+  comment = '';
+  currentStep = 2;
+  renderStep();
+}
+
+// ── Navigation ──
+function goBack() {
+  if (currentStep > 1) { currentStep--; renderStep(); }
+}
+
+function changeProject() {
+  selectedProject = null;
+  allProducts = [];
+  selectedProducts.clear();
+  selectedDept = '';
+  comment = '';
+  currentStep = 1;
+  filteredProjects = [...allProjects];
+  renderStep();
+}
+
+// ── Start ──
+init();
+</script>
+</body>
+</html>
