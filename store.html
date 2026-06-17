@@ -259,7 +259,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
         <thead>
           <tr>
             <th>Material · Code</th><th>UOM</th><th>Current stock</th>
-            <th>Opening Jun 1</th><th>Received</th><th>Issued</th>
+            <th>Opening Jun 1</th><th>Received</th><th id="issued-hdr">Issued</th>
             <th>Baseline/mo</th><th>Running/mo</th><th>Reorder pt</th>
             <th>Gap</th><th>Status</th>
           </tr>
@@ -417,15 +417,19 @@ function updateStatusFilter(){
   const sf = document.getElementById('status-filter');
   if(!sf || !storeData) return;
   const d = storeData;
-  const filterLabels = {
-    all:'All items', reorder:`⚠ ${d.needsReorderCount} need reorder`,
-    half:`▼ ${d.belowHalfCount} below 50%`, overstock:`${d.overstockedCount} overstocked`,
-    watch:'Watch list', ok:'Adequate', nodata:'No activity'
-  };
-  const label = filterLabels[activeFilter] || 'All items';
-  sf.innerHTML = activeFilter === 'all'
-    ? ''
-    : `<span style="background:var(--bg3);border:1px solid var(--border2);border-radius:999px;padding:2px 10px;color:var(--orange)">${label}</span>`;
+  const pills = [];
+  if(activeFilter !== 'all'){
+    const labels = {
+      reorder:`⚠ ${d.needsReorderCount} reorder`, half:`▼ ${d.belowHalfCount} below 50%`,
+      overstock:`${d.overstockedCount} overstocked`, watch:'Watch list',
+      ok:'Adequate', nodata:'No activity'
+    };
+    pills.push(labels[activeFilter]||activeFilter);
+  }
+  if(activeDept) pills.push('🏭 ' + activeDept);
+  sf.innerHTML = pills.map(p=>
+    `<span style="background:var(--bg3);border:1px solid var(--border2);border-radius:999px;padding:2px 10px;color:var(--orange);font-size:11px;font-family:'DM Mono',monospace">${p}</span>`
+  ).join('');
 }
 
 // ── Drawer ───────────────────────────────────────────────────
@@ -562,6 +566,13 @@ function renderDrawer(){
             <option value="reorder"     ${currentSort==='reorder'     ?'selected':''}>Reorder gap first</option>
             <option value="name"        ${currentSort==='name'        ?'selected':''}>Name A–Z</option>
           </select>
+          <div>
+            <div style="font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em">Department</div>
+            <select class="sort-select" id="dept-select" onchange="activeDept=this.value;currentPage=1;updateStatusFilter();applyFilters()" style="width:100%;border-radius:8px;padding:6px 10px">
+              <option value="">All departments</option>
+              ${(d.departments||[]).map(dept=>`<option value="${dept}" ${activeDept===dept?'selected':''}>${dept}</option>`).join('')}
+            </select>
+          </div>
         </div>
       </div>
     </div>
@@ -634,6 +645,7 @@ function setFilter(f,btn,cls){
 
 let currentSort = 'stock_asc';
 let liveLabel   = 'Baseline only';
+let activeDept  = '';   // '' = all departments
 
 function applyFilters(){
   if(!storeData) return;
@@ -649,6 +661,9 @@ function applyFilters(){
   else if(activeFilter==='watch')      items=items.filter(i=>i.isWatch&&!i.isOverstocked&&!i.needsReorder);
   else if(activeFilter==='ok')         items=items.filter(i=>!i.needsReorder&&!i.belowHalfAlert&&!i.isOverstocked&&!i.isWatch&&i.runningAvgMonthly>0);
   else if(activeFilter==='nodata')     items=items.filter(i=>!i.runningAvgMonthly&&!i.totalReceived&&!i.openingStock);
+
+  // Department filter
+  if(activeDept) items = items.filter(i => i.deptConsumption && i.deptConsumption[activeDept] > 0);
 
   if(q) items=items.filter(i=>(i.name||'').toLowerCase().includes(q)||(i.code||'').toLowerCase().includes(q));
 
@@ -685,6 +700,10 @@ function renderPage(){
   if(sc) sc.textContent = `${total} item${total!==1?'s':''} · page ${currentPage} of ${totalPages}`;
   updateStatusFilter();
 
+  // Update issued column header to show dept context
+  const issuedHdr = document.getElementById('issued-hdr');
+  if(issuedHdr) issuedHdr.textContent = activeDept ? 'Issued ('+activeDept+')' : 'Issued';
+
   // Rows
   if(!pageItems.length){
     document.getElementById('tbl-body').innerHTML =
@@ -704,7 +723,7 @@ function renderPage(){
         <td style="color:${sc};font-weight:500">${fmt(i.currentStock)}</td>
         <td>${fmt(i.openingStock)}</td>
         <td style="color:var(--teal)">${fmt(i.totalReceived)}</td>
-        <td style="color:var(--orange)">${fmt(i.totalIssued)}</td>
+        <td style="color:var(--orange)">${activeDept && i.deptConsumption ? fmt(i.deptConsumption[activeDept]||0) : fmt(i.totalIssued)}</td>
         <td style="color:var(--text3)">${fmt(i.baselineAvgMonthly)}</td>
         <td style="color:var(--orange)">${fmt(i.runningAvgMonthly)}</td>
         <td>${fmt(i.reorderPoint)}</td>
