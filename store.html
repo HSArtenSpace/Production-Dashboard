@@ -57,6 +57,22 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 /* ── Minimal status bar ── */
 .status-bar{display:flex;align-items:center;justify-content:space-between;padding:6px 2px;flex-shrink:0;gap:8px}
 
+/* ── Action Required card ── */
+.action-card{flex-shrink:0;background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.action-title{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;font-family:'DM Mono',monospace;display:flex;align-items:center;gap:6px;flex-shrink:0}
+.action-stats{display:flex;gap:8px;flex-wrap:wrap;flex:1}
+.action-stat{display:flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 12px;cursor:pointer;transition:all .15s}
+.action-stat:hover{background:var(--bg4);transform:translateY(-1px)}
+.action-stat.empty{opacity:.4;cursor:default}
+.action-stat.empty:hover{transform:none;background:var(--bg3)}
+.action-stat-num{font-size:16px;font-weight:600;font-family:'DM Mono',monospace}
+.action-stat-lbl{font-size:11px;color:var(--text2);white-space:nowrap}
+.action-stat.crit .action-stat-num{color:#ff6b6b}
+.action-stat.reorder .action-stat-num{color:var(--red)}
+.action-stat.half .action-stat-num{color:var(--purple)}
+.action-stat.over .action-stat-num{color:var(--amber)}
+.action-all-clear{color:var(--green);font-size:12px;font-family:'DM Mono',monospace;display:flex;align-items:center;gap:6px}
+
 /* ── Filter buttons (used inside drawer only) ── */
 .fbtn{font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 12px;border-radius:999px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;transition:all .15s}
 .fbtn:hover{color:var(--text);border-color:var(--border2)}
@@ -173,6 +189,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 /* ── Badges ── */
 .badge{font-size:9.5px;padding:2px 6px;border-radius:999px;white-space:nowrap;font-family:'DM Mono',monospace;font-weight:500}
 .b-reorder{background:var(--red-dim);color:var(--red);border:1px solid rgba(239,68,68,.2)}
+.b-critical{background:rgba(239,68,68,0.22);color:#ff6b6b;border:1px solid rgba(239,68,68,.45);box-shadow:0 0 8px rgba(239,68,68,.25);font-weight:600}
 .b-overstock{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(245,158,11,.2)}
 .b-watch{background:var(--blue-dim);color:var(--blue);border:1px solid rgba(59,130,246,.2)}
 .b-ok{background:var(--green-dim);color:var(--green);border:1px solid rgba(34,197,94,.2)}
@@ -225,7 +242,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
   <div style="display:flex;align-items:center;gap:8px;justify-content:flex-end">
     <!-- Search icon with popup -->
     <div class="search-anchor" id="search-anchor">
-      <button class="icon-btn" id="search-icon-btn" onclick="toggleSearch()" title="Search material / code">
+      <button class="icon-btn" id="search-icon-btn" onclick="toggleSearch()" title="Search material / code (Ctrl+K)">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
         </svg>
@@ -241,6 +258,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 
 <!-- Page body: table is the full hero — no KPIs, no filters here -->
 <div class="page-body">
+  <!-- Action Required — the first thing to look at, not the table -->
+  <div class="action-card" id="action-card" style="display:none"></div>
+
   <!-- Minimal status bar: just item count + active filter indicator -->
   <div class="status-bar" id="status-bar">
     <span id="status-count" style="color:var(--text3);font-family:'DM Mono',monospace;font-size:11px">Loading…</span>
@@ -322,21 +342,33 @@ function fmtDate(iso){
   if(!iso) return '—';
   return new Date(iso).toLocaleDateString('en-IN',{day:'2-digit',month:'short'});
 }
-function stockColor(i){
-  if(i.needsReorder)   return 'var(--red)';
-  if(i.belowHalfAlert) return 'var(--purple)';
-  if(i.isOverstocked)  return 'var(--amber)';
-  if(i.isWatch)        return 'var(--blue)';
-  if(!i.runningAvgMonthly&&!i.currentStock) return 'var(--text3)';
-  return 'var(--green)';
+// ── Consolidated category — single source of truth for colour + badge ──────
+// Priority order matters: negative stock is a data exception, ranks above
+// ordinary reorder/low-stock signals so it never gets visually buried.
+function categorize(i){
+  if(i.isNegativeStock) return {key:'critical',   label:'⛔ Negative',   color:'var(--red)',    badgeCls:'b-critical'};
+  if(i.needsReorder)    return {key:'reorder',    label:'⚠ Reorder',    color:'var(--red)',    badgeCls:'b-reorder'};
+  if(i.belowHalfAlert)  return {key:'half',       label:'▼ Below 50%',  color:'var(--purple)', badgeCls:'b-half'};
+  if(i.isOverstocked)   return {key:'overstock',  label:'Overstocked',  color:'var(--amber)',  badgeCls:'b-overstock'};
+  if(i.isWatch)         return {key:'watch',      label:'Watch',        color:'var(--blue)',   badgeCls:'b-watch'};
+  if(!i.runningAvgMonthly && !i.currentStock)
+                         return {key:'nodata',    label:'No data',      color:'var(--text3)',  badgeCls:'b-nodata'};
+  return                       {key:'ok',         label:'Adequate',     color:'var(--green)',  badgeCls:'b-ok'};
 }
-function itemBadge(i){
-  if(i.needsReorder)   return '<span class="badge b-reorder">⚠ Reorder</span>';
-  if(i.belowHalfAlert) return '<span class="badge b-half">▼ Below 50%</span>';
-  if(i.isOverstocked)  return '<span class="badge b-overstock">Overstocked</span>';
-  if(i.isWatch)        return '<span class="badge b-watch">Watch</span>';
-  if(!i.runningAvgMonthly&&!i.currentStock) return '<span class="badge b-nodata">No data</span>';
-  return '<span class="badge b-ok">Adequate</span>';
+function stockColor(i){ return categorize(i).color; }
+function itemBadge(i){ const c=categorize(i); return `<span class="badge ${c.badgeCls}">${c.label}</span>`; }
+
+// ── Trend indicator — proxy from Received vs Issued since Jun 1 ────────────
+// Not a true week-over-week trend (no historical snapshots yet), but tells you
+// at a glance whether an item's stock is net growing or net shrinking since baseline.
+function trendArrow(i, compact){
+  const net = i.netChangeSinceJun1 || 0;
+  if(Math.abs(net) < 0.01) return '';
+  const up = net > 0;
+  const color = up ? 'var(--green)' : 'var(--red)';
+  const arrow = up ? '▲' : '▼';
+  const sizeStyle = compact ? 'font-size:9px' : 'font-size:10px';
+  return ` <span style="${sizeStyle};color:${color};font-family:'DM Mono',monospace">${arrow}${fmt(Math.abs(net),0)}</span>`;
 }
 
 // ── Search icon popup ────────────────────────────────────────
@@ -355,6 +387,19 @@ document.addEventListener('click', e=>{
     searchOpen = false;
     document.getElementById('search-popup').classList.remove('open');
     document.getElementById('search-icon-btn').classList.remove('active');
+  }
+});
+
+// ── Command palette shortcut — Ctrl+K / Cmd+K opens search ─────────────────
+document.addEventListener('keydown', e=>{
+  const isCmdK = (e.ctrlKey || e.metaKey) && e.key.toLowerCase()==='k';
+  if(isCmdK){
+    e.preventDefault();
+    if(!searchOpen) toggleSearch();
+    else document.getElementById('search-box').focus();
+  }
+  if(e.key === 'Escape' && searchOpen){
+    toggleSearch();
   }
 });
 
@@ -411,6 +456,53 @@ function renderKPIs(){
   const sc = document.getElementById('status-count');
   if(sc) sc.textContent = `${d.totalSKUs} SKUs · ${d.activeSKUs} active`;
   updateStatusFilter();
+  renderActionCard();
+}
+
+// ── Action Required card — the first thing management should see ──────────
+function renderActionCard(){
+  const el = document.getElementById('action-card');
+  if(!el || !storeData) return;
+  const d = storeData;
+  const negCount = d.negativeStockCount || 0;
+
+  const stats = [
+    {key:'critical',  cls:'crit',    count:negCount,                label:'negative stock'},
+    {key:'reorder',   cls:'reorder', count:d.needsReorderCount||0,  label:'need reorder'},
+    {key:'half',      cls:'half',    count:d.belowHalfCount||0,     label:'below 50% avg'},
+    {key:'overstock', cls:'over',    count:d.overstockedCount||0,   label:'overstocked'},
+  ];
+
+  const anyIssues = stats.some(s=>s.count>0);
+  el.style.display = 'flex';
+
+  if(!anyIssues){
+    el.innerHTML = `
+      <span class="action-title">📋 Action required</span>
+      <span class="action-all-clear">✓ All clear — no items need attention right now</span>`;
+    return;
+  }
+
+  const statsHtml = stats.map(s=>{
+    if(s.count===0) return `<div class="action-stat empty"><span class="action-stat-num">0</span><span class="action-stat-lbl">${s.label}</span></div>`;
+    return `<div class="action-stat ${s.cls}" onclick="applyActionFilter('${s.key}')">
+      <span class="action-stat-num">${s.count}</span><span class="action-stat-lbl">${s.label}</span>
+    </div>`;
+  }).join('');
+
+  el.innerHTML = `<span class="action-title">📋 Action required</span><div class="action-stats">${statsHtml}</div>`;
+}
+
+// Map Action Card stat keys to existing filter system
+function applyActionFilter(key){
+  const filterMap = {critical:'critical', reorder:'reorder', half:'half', overstock:'overstock'};
+  const f = filterMap[key] || 'all';
+  setFilter(f, null, '');
+  // Sync the drawer's filter buttons visually if drawer is open
+  const btnMap = {critical:null, reorder:'fbtn-reorder', half:'fbtn-half', overstock:'fbtn-overstock'};
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on','on-red','on-amber','on-green','on-teal'));
+  const id = btnMap[key];
+  if(id){ const b=document.getElementById(id); if(b) b.classList.add(key==='reorder'?'on-red':key==='overstock'?'on-amber':'on'); }
 }
 
 function updateStatusFilter(){
@@ -476,17 +568,20 @@ function renderDrawer(){
       </div>
     </div>`).join('')||'<div style="padding:14px;text-align:center;color:var(--text3);font-size:12px">No data yet</div>';
 
-  // Top 10 reorder (worst gap first)
-  const critItems = [...items].filter(i=>i.needsReorder).sort((a,b)=>a.stockGap-b.stockGap).slice(0,10);
+  // Top 10 needing action — negative stock first (worst), then reorder gap
+  const critItems = [...items]
+    .filter(i=>i.needsReorder || i.isNegativeStock)
+    .sort((a,b)=> (b.isNegativeStock - a.isNegativeStock) || (a.stockGap-b.stockGap))
+    .slice(0,10);
   const critRows  = critItems.length
     ? critItems.map(i=>`
       <div class="d-item" onclick="focusItem('${i.code}');closeDrawer()">
         <div class="d-item-name">
-          <div class="d-item-title">${i.name||i.code}</div>
+          <div class="d-item-title">${i.isNegativeStock?'⛔ ':''}${i.name||i.code}</div>
           <div class="d-item-meta">${i.code}</div>
         </div>
         <div class="d-item-right">
-          <div class="d-item-val" style="color:var(--red)">${fmt(i.currentStock)}</div>
+          <div class="d-item-val" style="color:${i.isNegativeStock?'#ff6b6b':'var(--red)'};${i.isNegativeStock?'font-weight:600':''}">${fmt(i.currentStock)}</div>
           <div class="d-item-sub">need ${fmt(i.safetyStock,0)}</div>
         </div>
       </div>`).join('')
@@ -521,12 +616,13 @@ function renderDrawer(){
     <div class="d-section">
       <div class="d-sec-head" onclick="toggleSection('kpis')">
         <span class="d-sec-title">Store health · KPIs</span>
-        <span class="d-sec-meta"><span>6 metrics</span><span id="dc-kpis">${secOpen.kpis?'▾':'▸'}</span></span>
+        <span class="d-sec-meta"><span>7 metrics</span><span id="dc-kpis">${secOpen.kpis?'▾':'▸'}</span></span>
       </div>
       <div class="d-sec-body" id="ds-kpis" style="display:${secOpen.kpis?'':'none'}">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px">
           ${[
             {label:'Active SKUs',    val:d.activeSKUs,        cls:'c-blue',  sub:d.totalSKUs+' tracked'},
+            {label:'⛔ Negative',    val:d.negativeStockCount||0, cls:'c-red', sub:'data exception'},
             {label:'⚠ Reorder now', val:d.needsReorderCount, cls:'c-red',   sub:'below safety stock'},
             {label:'▼ Below 50%',   val:d.belowHalfCount,    cls:'c-purple',sub:'attention soon'},
             {label:'Overstocked',    val:d.overstockedCount,  cls:'c-amber', sub:'skip buying'},
@@ -552,6 +648,7 @@ function renderDrawer(){
         <div style="padding:10px;display:flex;flex-direction:column;gap:8px">
           <div style="display:flex;flex-wrap:wrap;gap:6px">
             <button class="fbtn ${activeFilter==='all'?'on':''}"       id="fbtn-all"       onclick="setFilter('all',this,'on')">All items</button>
+            <button class="fbtn ${activeFilter==='critical'?'on-red':''}" id="fbtn-critical" onclick="setFilter('critical',this,'on-red')" style="${activeFilter==='critical'?'box-shadow:0 0 6px rgba(239,68,68,.4)':''}">⛔ Negative</button>
             <button class="fbtn ${activeFilter==='reorder'?'on-red':''}" id="fbtn-reorder" onclick="setFilter('reorder',this,'on-red')">⚠ Reorder</button>
             <button class="fbtn ${activeFilter==='half'?'on':''}"      id="fbtn-half"      onclick="setFilter('half',this,'on')">▼ Below 50%</button>
             <button class="fbtn ${activeFilter==='overstock'?'on-amber':''}" id="fbtn-overstock" onclick="setFilter('overstock',this,'on-amber')">Overstocked</button>
@@ -655,11 +752,12 @@ function applyFilters(){
   if(sortEl) currentSort = sortEl.value;
   let items  = storeData.items||[];
 
-  if(activeFilter==='reorder')         items=items.filter(i=>i.needsReorder);
-  else if(activeFilter==='half')       items=items.filter(i=>i.belowHalfAlert&&!i.needsReorder);
-  else if(activeFilter==='overstock')  items=items.filter(i=>i.isOverstocked);
-  else if(activeFilter==='watch')      items=items.filter(i=>i.isWatch&&!i.isOverstocked&&!i.needsReorder);
-  else if(activeFilter==='ok')         items=items.filter(i=>!i.needsReorder&&!i.belowHalfAlert&&!i.isOverstocked&&!i.isWatch&&i.runningAvgMonthly>0);
+  if(activeFilter==='critical')         items=items.filter(i=>i.isNegativeStock);
+  else if(activeFilter==='reorder')     items=items.filter(i=>i.needsReorder&&!i.isNegativeStock);
+  else if(activeFilter==='half')        items=items.filter(i=>i.belowHalfAlert&&!i.needsReorder&&!i.isNegativeStock);
+  else if(activeFilter==='overstock')   items=items.filter(i=>i.isOverstocked);
+  else if(activeFilter==='watch')      items=items.filter(i=>i.isWatch&&!i.isOverstocked&&!i.needsReorder&&!i.isNegativeStock);
+  else if(activeFilter==='ok')         items=items.filter(i=>!i.needsReorder&&!i.belowHalfAlert&&!i.isOverstocked&&!i.isWatch&&!i.isNegativeStock&&i.runningAvgMonthly>0);
   else if(activeFilter==='nodata')     items=items.filter(i=>!i.runningAvgMonthly&&!i.totalReceived&&!i.openingStock);
 
   // Department filter
@@ -720,7 +818,7 @@ function renderPage(){
       <tr class="${isExp?'exp-row':''}" onclick="toggleExpand('${i.code}')">
         <td class="name-col"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${i.name||i.code}</div><div style="font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:1px">${i.code}</div></td>
         <td>${i.uom||'—'}</td>
-        <td style="color:${sc};font-weight:500">${fmt(i.currentStock)}</td>
+        <td style="color:${sc};font-weight:500">${fmt(i.currentStock)}${trendArrow(i, true)}</td>
         <td>${fmt(i.openingStock)}</td>
         <td style="color:var(--teal)">${fmt(i.totalReceived)}</td>
         <td style="color:var(--orange)">${activeDept && i.deptConsumption ? fmt(i.deptConsumption[activeDept]||0) : fmt(i.totalIssued)}</td>
@@ -802,12 +900,15 @@ function renderDetail(item){
     ? issued.slice(0,10).map(r=>`<tr><td>${fmtDate(r.date)}</td><td>${fmt(r.qty)}</td><td>${r.dept||'—'}</td><td style="max-width:100px;overflow:hidden;text-overflow:ellipsis">${r.project||'—'}</td></tr>`).join('')
     : '<tr><td colspan="4" style="color:var(--text3)">No issues since Jun 1</td></tr>';
   const halfThr  = item.runningAvgMonthly*0.5;
+  const specHtml = item.spec
+    ? `<div style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:8px">Spec: ${item.spec}</div>` : '';
   const alertHtml = item.belowHalfAlert
     ? `<div style="background:var(--purple-dim);border:1px solid rgba(168,85,247,.2);border-radius:6px;padding:6px 10px;font-size:11px;color:var(--purple);font-family:'DM Mono',monospace;margin-bottom:8px">
         ▼ Stock (${fmt(item.currentStock)} ${item.uom}) below 50% of monthly avg (${fmt(halfThr)} ${item.uom}) — replenish soon
        </div>` : '';
   return `
   <div class="item-detail">
+    ${specHtml}
     ${alertHtml}
     <div class="detail-grid">
       <div class="detail-stat">
@@ -834,7 +935,8 @@ function renderDetail(item){
       </div>
       <div class="detail-stat">
         <div class="detail-stat-lbl">Current stock</div>
-        <div class="detail-stat-val" style="color:${stockColor(item)}">${fmt(item.currentStock)} <span style="font-size:9px;color:var(--text3)">${item.uom}</span></div>
+        <div class="detail-stat-val" style="color:${stockColor(item)}">${fmt(item.currentStock)} <span style="font-size:9px;color:var(--text3)">${item.uom}</span>${trendArrow(item, false)}</div>
+        <div style="font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:2px">net change since Jun 1</div>
       </div>
       <div class="detail-stat">
         <div class="detail-stat-lbl">Safety stock</div>
@@ -842,8 +944,9 @@ function renderDetail(item){
         <div style="font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:2px">3-wk lead + 25% surge</div>
       </div>
       <div class="detail-stat">
-        <div class="detail-stat-lbl">Months remaining</div>
-        <div class="detail-stat-val" style="color:${item.monthsRemaining<1?'var(--red)':item.monthsRemaining>3?'var(--amber)':'var(--green)'}">${item.monthsRemaining>=99?'∞':fmt(item.monthsRemaining,1)}</div>
+        <div class="detail-stat-lbl">Stock remaining</div>
+        <div class="detail-stat-val" style="color:${item.monthsRemaining<1?'var(--red)':item.monthsRemaining>3?'var(--amber)':'var(--green)'}">${item.daysRemaining>=9999?'∞':item.daysRemaining+' days'}</div>
+        <div style="font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:2px">${item.monthsRemaining>=99?'∞':fmt(item.monthsRemaining,1)+' months'}</div>
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
