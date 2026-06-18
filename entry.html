@@ -2,155 +2,166 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Floor Entry · Artenspace</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#0f0f0f;--bg2:#161616;--bg3:#1e1e1e;--bg4:#252525;
-  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);
+  --bg:#0f0f0f;--bg2:#161616;--bg3:#1e1e1e;--bg4:#252525;--bg5:#2d2d2d;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
   --text:#f0f0f0;--text2:#999;--text3:#555;
-  --blue:#3b82f6;--blue-dim:rgba(59,130,246,0.13);
-  --amber:#f59e0b;--amber-dim:rgba(245,158,11,0.13);
-  --green:#22c55e;--green-dim:rgba(34,197,94,0.13);
-  --red:#ef4444;--red-dim:rgba(239,68,68,0.13);
+  --blue:#3b82f6;--blue-dim:rgba(59,130,246,0.12);
+  --amber:#f59e0b;--amber-dim:rgba(245,158,11,0.12);
+  --green:#22c55e;--green-dim:rgba(34,197,94,0.12);
+  --red:#ef4444;--red-dim:rgba(239,68,68,0.12);
   --orange:#f05423;
-  --radius:10px;
 }
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:14px;overscroll-behavior:none}
 
-/* ── Shell ── */
-.shell{max-width:760px;margin:0 auto;padding:28px 20px 60px}
+.shell{max-width:680px;margin:0 auto;padding:20px 16px 80px}
 
-/* ── Header ── */
-.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;flex-wrap:wrap;gap:12px}
-.brand{display:flex;align-items:center;gap:10px}
-.brand-logo{height:20px;width:auto}
-.brand-divider{width:1px;height:16px;background:var(--border2)}
-.brand-sub{font-size:11px;font-family:'DM Mono',monospace;color:var(--text3)}
-.header-link{font-size:12px;color:var(--text3);text-decoration:none;padding:6px 12px;border:1px solid var(--border);border-radius:999px;transition:all .15s}
-.header-link:hover{color:var(--text);border-color:var(--border2)}
+/* Header */
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.brand{display:flex;align-items:center;gap:9px}
+.brand-logo{height:18px;width:auto}
+.brand-div{width:1px;height:14px;background:var(--border2)}
+.brand-sub{font-size:10px;font-family:'DM Mono',monospace;color:var(--text3)}
+.hdr-link{font-size:11px;color:var(--text3);text-decoration:none;padding:5px 11px;border:1px solid var(--border);border-radius:999px}
 
-/* ── Page title ── */
-.page-title{font-size:22px;font-weight:600;margin-bottom:4px}
-.page-sub{font-size:13px;color:var(--text3);margin-bottom:28px}
+/* Mode cards */
+.mode-section{margin-bottom:8px}
+.mode-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.mode-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px 16px;cursor:pointer;transition:all .15s;text-align:center}
+.mode-card:hover{border-color:var(--border2);background:var(--bg3)}
+.mode-card.active{border-color:var(--blue);background:var(--blue-dim)}
+.mode-icon{font-size:26px;margin-bottom:8px}
+.mode-title{font-size:13px;font-weight:600;margin-bottom:4px}
+.mode-desc{font-size:11px;color:var(--text3);line-height:1.4}
+.mode-card.active .mode-desc{color:var(--text2)}
 
-/* ── Step indicator ── */
-.steps{display:flex;align-items:center;gap:0;margin-bottom:32px}
-.step{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text3);font-family:'DM Mono',monospace}
-.step-num{width:22px;height:22px;border-radius:50%;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;transition:all .2s}
-.step.active .step-num{background:var(--blue);border-color:var(--blue);color:#fff}
-.step.done .step-num{background:var(--green);border-color:var(--green);color:#fff}
-.step.active{color:var(--text2)}
-.step-line{flex:1;height:1px;background:var(--border);margin:0 8px;min-width:20px}
-.step-line.done{background:var(--green)}
+/* Section label */
+.sec-label{font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px}
 
-/* ── Card ── */
-.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px}
-.card-title{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-family:'DM Mono',monospace;margin-bottom:14px}
+/* Dept buttons — floor mode */
+.dept-grid-floor{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-bottom:20px}
+.dept-btn{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:8px}
+.dept-btn:hover{border-color:var(--border2);background:var(--bg3)}
+.dept-btn.active{background:var(--blue-dim);border-color:rgba(59,130,246,.4)}
+.dept-dot{width:8px;height:8px;border-radius:50%;background:var(--border2);flex-shrink:0;transition:background .15s}
+.dept-btn.active .dept-dot{background:var(--blue)}
+.dept-btn-name{font-size:13px;font-weight:500}
+.dept-btn-pct{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;margin-left:auto}
 
-/* ── Search ── */
-.search-wrap{position:relative}
-.search-input{width:100%;font-family:'DM Sans',sans-serif;font-size:14px;padding:11px 14px 11px 38px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--bg3);color:var(--text);outline:none;transition:border-color .15s}
+/* Active dept bar */
+.active-dept-bar{background:var(--blue-dim);border:1px solid rgba(59,130,246,.25);border-radius:10px;padding:11px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.adb-left{display:flex;align-items:center;gap:8px}
+.adb-dot{width:8px;height:8px;border-radius:50%;background:var(--blue)}
+.adb-name{font-size:13px;font-weight:600;color:var(--blue)}
+.adb-pct{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace}
+.adb-change{font-size:11px;color:var(--text3);cursor:pointer;padding:4px 10px;border:1px solid var(--border2);border-radius:999px;background:transparent;font-family:'DM Mono',monospace}
+
+/* Search */
+.search-wrap{position:relative;margin-bottom:10px}
+.search-input{width:100%;font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 36px 10px 36px;border-radius:9px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);outline:none}
 .search-input:focus{border-color:var(--blue)}
 .search-input::placeholder{color:var(--text3)}
-.search-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:14px;pointer-events:none}
-.search-clear{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--text3);cursor:pointer;font-size:16px;line-height:1;display:none}
-.search-clear.vis{display:block}
+.si-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:13px;pointer-events:none}
+.si-clear{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--text3);cursor:pointer;font-size:18px;line-height:1;display:none}
+.si-clear.vis{display:block}
 
-/* ── Project list ── */
-.proj-list{margin-top:10px;max-height:340px;overflow-y:auto;border-radius:var(--radius);border:1px solid var(--border)}
-.proj-list:empty{display:none}
-.proj-item{padding:12px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .1s;display:flex;justify-content:space-between;align-items:center;gap:8px}
-.proj-item:last-child{border-bottom:none}
-.proj-item:hover{background:var(--bg3)}
-.proj-item.selected{background:var(--blue-dim);border-left:2px solid var(--blue)}
-.proj-name{font-size:13px;font-weight:500}
-.proj-meta{font-size:11px;color:var(--text3);margin-top:2px;font-family:'DM Mono',monospace}
-.proj-poc{font-size:11px;color:var(--text3);text-align:right;white-space:nowrap}
+/* Project list */
+.proj-list{border-radius:10px;border:1px solid var(--border);overflow:hidden;margin-bottom:16px}
+.proj-row{border-bottom:1px solid var(--border);background:var(--bg2);transition:background .1s}
+.proj-row:last-child{border-bottom:none}
+.proj-row-header{padding:12px 14px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.proj-row-header:hover{background:var(--bg3)}
+.proj-row.expanded .proj-row-header{background:var(--bg3);border-bottom:1px solid var(--border)}
+.proj-left{flex:1;min-width:0}
+.proj-name{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.proj-meta{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:2px}
+.proj-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.proj-poc{font-size:10px;color:var(--text3);text-align:right}
+.proj-chevron{font-size:10px;color:var(--text3);transition:transform .2s}
+.proj-row.expanded .proj-chevron{transform:rotate(180deg)}
+.proj-submitted-tag{font-size:10px;padding:2px 8px;border-radius:999px;background:var(--green-dim);color:var(--green);border:1px solid rgba(34,197,94,.2);font-family:'DM Mono',monospace}
 
-/* ── Selected project display ── */
-.selected-proj{background:var(--blue-dim);border:1px solid rgba(59,130,246,.25);border-radius:var(--radius);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px}
-.sel-proj-name{font-size:14px;font-weight:500}
-.sel-proj-meta{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace;margin-top:2px}
-.change-btn{font-size:11px;color:var(--text3);cursor:pointer;padding:4px 10px;border:1px solid var(--border2);border-radius:999px;white-space:nowrap;background:transparent;font-family:'DM Mono',monospace;transition:all .15s}
-.change-btn:hover{color:var(--text);border-color:var(--text2)}
+/* Product picker (inline expand) */
+.prod-picker{padding:12px 14px;background:var(--bg3);display:none}
+.proj-row.expanded .prod-picker{display:block}
+.prod-picker-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:6px;margin-bottom:10px}
+.prod-check-item{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);cursor:pointer;transition:all .12s}
+.prod-check-item:hover{border-color:var(--border2)}
+.prod-check-item.checked{background:var(--blue-dim);border-color:rgba(59,130,246,.3)}
+.pci-box{width:15px;height:15px;border-radius:4px;border:1.5px solid var(--border2);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:9px;transition:all .12s}
+.prod-check-item.checked .pci-box{background:var(--blue);border-color:var(--blue);color:#fff}
+.pci-name{font-size:11px;font-weight:500;line-height:1.3}
+.pci-code{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:1px}
+.pick-all-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.pick-all-btn{font-size:10px;color:var(--text3);cursor:pointer;padding:2px 8px;border:1px solid var(--border);border-radius:999px;background:transparent;font-family:'DM Mono',monospace}
+.pick-sel-count{font-size:10px;color:var(--blue);font-family:'DM Mono',monospace}
+.pick-comment{width:100%;font-family:'DM Sans',sans-serif;font-size:12px;padding:8px 10px;border-radius:8px;border:1px solid var(--border2);background:var(--bg2);color:var(--text);outline:none;resize:none;min-height:56px;margin-bottom:8px;line-height:1.4}
+.pick-comment:focus{border-color:var(--blue)}
+.pick-comment::placeholder{color:var(--text3)}
+.pick-submit-row{display:flex;gap:8px}
+.pick-submit{font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;padding:8px 16px;border-radius:8px;border:none;background:var(--blue);color:#fff;cursor:pointer;transition:background .15s;flex:1}
+.pick-submit:hover{background:#2563eb}
+.pick-submit:disabled{background:var(--bg4);color:var(--text3);cursor:not-allowed}
+.pick-cancel{font-family:'DM Sans',sans-serif;font-size:12px;padding:8px 12px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer}
 
-/* ── Product grid ── */
-.prod-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-top:2px}
-.prod-chip{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;cursor:pointer;transition:all .15s;display:flex;align-items:flex-start;gap:8px}
-.prod-chip:hover{border-color:var(--border2);background:var(--bg4)}
-.prod-chip.selected{background:var(--blue-dim);border-color:rgba(59,130,246,.4)}
-.prod-check{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--border2);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .15s}
-.prod-chip.selected .prod-check{background:var(--blue);border-color:var(--blue);color:#fff}
-.prod-info{flex:1;min-width:0}
-.prod-chip-name{font-size:12px;font-weight:500;line-height:1.3}
-.prod-chip-code{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:2px}
+/* Desk mode */
+.desk-form{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px}
+.desk-proj-search{margin-bottom:14px}
+.desk-selected-proj{background:var(--blue-dim);border:1px solid rgba(59,130,246,.25);border-radius:9px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.dsp-name{font-size:13px;font-weight:500}
+.dsp-meta{font-size:10px;color:var(--text2);font-family:'DM Mono',monospace;margin-top:2px}
+.dsp-change{font-size:11px;color:var(--text3);cursor:pointer;padding:3px 9px;border:1px solid var(--border2);border-radius:999px;background:transparent;font-family:'DM Mono',monospace}
 
-/* ── Select all ── */
-.select-all-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.select-all-btn{font-size:11px;color:var(--text3);cursor:pointer;padding:3px 10px;border:1px solid var(--border);border-radius:999px;background:transparent;font-family:'DM Mono',monospace;transition:all .15s}
-.select-all-btn:hover{color:var(--text);border-color:var(--border2)}
-.selected-count{font-size:11px;color:var(--blue);font-family:'DM Mono',monospace}
+/* Desk product rows */
+.desk-prod-list{margin-bottom:14px}
+.desk-prod-row{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:6px;cursor:pointer;transition:all .12s;display:flex;align-items:center;gap:10px}
+.desk-prod-row:hover{border-color:var(--border2)}
+.desk-prod-row.checked{background:var(--blue-dim);border-color:rgba(59,130,246,.3)}
+.dpr-box{width:15px;height:15px;border-radius:4px;border:1.5px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;transition:all .12s}
+.desk-prod-row.checked .dpr-box{background:var(--blue);border-color:var(--blue);color:#fff}
+.dpr-info{flex:1}
+.dpr-name{font-size:12px;font-weight:500}
+.dpr-code{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:1px}
 
-/* ── Department grid ── */
-.dept-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
-.dept-chip{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 14px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:8px}
-.dept-chip:hover{border-color:var(--border2);background:var(--bg4)}
-.dept-chip.selected{background:var(--blue-dim);border-color:rgba(59,130,246,.4)}
-.dept-dot{width:8px;height:8px;border-radius:50%;background:var(--border2);flex-shrink:0;transition:background .15s}
-.dept-chip.selected .dept-dot{background:var(--blue)}
-.dept-name{font-size:13px}
-.dept-pct{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;margin-left:auto}
+/* Dept optional tag */
+.dept-opt-row{margin-bottom:14px}
+.dept-opt-label{font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.dept-opt-wrap{display:flex;flex-wrap:wrap;gap:6px}
+.dept-tag-btn{font-size:11px;padding:4px 12px;border-radius:999px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;font-family:'DM Mono',monospace;transition:all .12s}
+.dept-tag-btn:hover{border-color:var(--border2);color:var(--text2)}
+.dept-tag-btn.sel{background:var(--blue-dim);border-color:rgba(59,130,246,.4);color:var(--blue)}
+.dept-tag-btn.clear-btn{color:var(--red);border-color:rgba(239,68,68,.2)}
 
-/* ── Comment ── */
-.comment-input{width:100%;font-family:'DM Sans',sans-serif;font-size:13px;padding:12px 14px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--bg3);color:var(--text);outline:none;resize:vertical;min-height:80px;transition:border-color .15s;line-height:1.5}
-.comment-input:focus{border-color:var(--blue)}
-.comment-input::placeholder{color:var(--text3)}
-.char-count{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;text-align:right;margin-top:5px}
+/* Comment */
+.comment-wrap{margin-bottom:14px}
+.comment-label{font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.comment-ta{width:100%;font-family:'DM Sans',sans-serif;font-size:13px;padding:10px 12px;border-radius:9px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);outline:none;resize:none;min-height:70px;line-height:1.5}
+.comment-ta:focus{border-color:var(--blue)}
+.comment-ta::placeholder{color:var(--text3)}
 
-/* ── Summary ── */
-.summary-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px}
-.summary-row{display:flex;justify-content:space-between;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--border);gap:12px}
-.summary-row:last-child{border-bottom:none}
-.summary-label{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;white-space:nowrap}
-.summary-val{font-size:13px;text-align:right;font-weight:500}
-.summary-products{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end}
-.summary-prod-tag{font-size:10px;padding:2px 8px;border-radius:999px;background:var(--blue-dim);color:var(--blue);border:1px solid rgba(59,130,246,.2);font-family:'DM Mono',monospace}
+/* Submit btn */
+.submit-btn{width:100%;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:12px;border-radius:9px;border:none;background:var(--blue);color:#fff;cursor:pointer;transition:background .15s}
+.submit-btn:hover{background:#2563eb}
+.submit-btn:disabled{background:var(--bg4);color:var(--text3);cursor:not-allowed}
 
-/* ── Dept badge ── */
-.dept-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:3px 10px;border-radius:999px;background:var(--blue-dim);color:var(--blue);border:1px solid rgba(59,130,246,.2)}
-.dept-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--blue)}
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:10px 18px;font-size:13px;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;z-index:100}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.success{border-color:rgba(34,197,94,.3);color:var(--green)}
+.toast.err{border-color:rgba(239,68,68,.3);color:var(--red)}
 
-/* ── Buttons ── */
-.btn-row{display:flex;gap:10px;margin-top:4px}
-.btn{font-family:'DM Sans',sans-serif;font-size:13px;padding:10px 20px;border-radius:var(--radius);border:none;cursor:pointer;font-weight:500;transition:all .2s;white-space:nowrap}
-.btn-primary{background:var(--blue);color:#fff}
-.btn-primary:hover{background:#2563eb}
-.btn-primary:disabled{background:var(--bg4);color:var(--text3);cursor:not-allowed}
-.btn-secondary{background:transparent;color:var(--text2);border:1px solid var(--border2)}
-.btn-secondary:hover{background:var(--bg3);color:var(--text)}
-.btn-full{width:100%}
-
-/* ── Success state ── */
-.success-card{background:var(--green-dim);border:1px solid rgba(34,197,94,.25);border-radius:var(--radius);padding:20px;text-align:center}
-.success-icon{font-size:32px;margin-bottom:8px}
-.success-title{font-size:16px;font-weight:600;color:var(--green);margin-bottom:4px}
-.success-sub{font-size:12px;color:var(--text2)}
-
-/* ── Loading / Error ── */
-.loader{padding:20px;text-align:center;color:var(--text3);font-size:13px}
-.spin{display:inline-block;width:16px;height:16px;border:2px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+/* Misc */
+.empty{font-size:12px;color:var(--text3);padding:20px;text-align:center}
+.spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:5px}
 @keyframes spin{to{transform:rotate(360deg)}}
-.err{font-size:12px;color:var(--red);background:var(--red-dim);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:10px 12px;margin-top:8px}
-
-/* ── Empty state ── */
-.empty{font-size:12px;color:var(--text3);padding:16px;text-align:center}
-
-/* ── Scrollbar ── */
-::-webkit-scrollbar{width:4px}
-::-webkit-scrollbar-track{background:transparent}
+.day-label{font-size:12px;font-family:'DM Mono',monospace;color:var(--text3);margin-bottom:20px}
+::-webkit-scrollbar{width:3px}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
 </style>
 </head>
@@ -170,37 +181,49 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
           <path class="st0" d="M2092.7,88.3l0.1,280c-4.2,11.6-20.6,11.6-24.8,0l-55.9-95.3L1903.7,88.3h-0.1h-78.6h-0.1h-0.1h-78.6v314.3h74l-0.1-280c4.2-11.6,20.6-11.6,24.8,0l54.3,92.5l109.9,187.5h0.1h78.6h0.1h0.1h78.6V88.3H2092.7z"/>
         </g></g>
       </svg>
-      <div class="brand-divider"></div>
+      <div class="brand-div"></div>
       <div class="brand-sub">Floor Entry</div>
     </div>
-    <a class="header-link" href="viewer.html">&#128202; Viewer Dashboard</a>
+    <a class="hdr-link" href="viewer.html">&#128202; Viewer</a>
   </div>
 
-  <div class="page-title">Daily Floor Update</div>
-  <div class="page-sub">Log current department and observations for active products.</div>
+  <!-- Date -->
+  <div class="day-label" id="day-label"></div>
 
-  <!-- Step indicator -->
-  <div class="steps">
-    <div class="step active" id="step-1"><div class="step-num">1</div><span>Project</span></div>
-    <div class="step-line" id="line-1"></div>
-    <div class="step" id="step-2"><div class="step-num">2</div><span>Products</span></div>
-    <div class="step-line" id="line-2"></div>
-    <div class="step" id="step-3"><div class="step-num">3</div><span>Department</span></div>
-    <div class="step-line" id="line-3"></div>
-    <div class="step" id="step-4"><div class="step-num">4</div><span>Comment</span></div>
-    <div class="step-line" id="line-4"></div>
-    <div class="step" id="step-5"><div class="step-num">5</div><span>Submit</span></div>
+  <!-- Mode selector -->
+  <div class="mode-cards" id="mode-cards">
+    <div class="mode-card" id="mode-floor" onclick="setMode('floor')">
+      <div class="mode-icon">🏭</div>
+      <div class="mode-title">Floor Round</div>
+      <div class="mode-desc">Pick dept → select projects & products → quick log</div>
+    </div>
+    <div class="mode-card" id="mode-desk" onclick="setMode('desk')">
+      <div class="mode-icon">💻</div>
+      <div class="mode-title">Desk Update</div>
+      <div class="mode-desc">Search project → pick products → optional dept + comment</div>
+    </div>
   </div>
 
-  <!-- Main form -->
-  <div id="form-area"></div>
+  <!-- Main content area -->
+  <div id="main-area"></div>
 
 </div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
 
 <script>
 const API = 'https://script.google.com/macros/s/AKfycbxw89g6fbnFJdJju5gPlhyBj1uCd8Ng92kh3UxtAAowk5S9RsmX6xZ6nRP1EMGslGGg/exec';
 
-const DEPT_PIPELINE = [
+const FLOOR_DEPTS = [
+  { name: 'Solid Wood',     pct: 30 },
+  { name: 'Metal',          pct: 40 },
+  { name: 'Upholstery',     pct: 55 },
+  { name: 'Surface Finish', pct: 70 },
+  { name: 'Packing',        pct: 94 },
+];
+
+const ALL_DEPTS = [
   { name: 'Designing',        pct: 5   },
   { name: 'Design Approval',  pct: 10  },
   { name: 'Production File',  pct: 15  },
@@ -217,427 +240,492 @@ const DEPT_PIPELINE = [
 ];
 
 // State
+let mode = null;
 let allProjects = [];
 let filteredProjects = [];
-let selectedProject = null;
-let allProducts = [];
-let selectedProducts = new Set();
-let selectedDept = '';
-let comment = '';
-let currentStep = 1;
-let isSubmitting = false;
+let activeDept = null;
+let expandedProject = null;
+let selectedProducts = {}; // projectCode → Set of product codes
+let productCache = {}; // projectCode → [products]
+let submittedProjects = new Set(); // projectCode_dept combos submitted this session
+let floorSearch = '';
+
+// Desk state
+let deskProjects = [];
+let deskFiltered = [];
+let deskSelected = null;
+let deskProducts = [];
+let deskChecked = new Set();
+let deskDept = '';
+let deskComment = '';
 
 // ── Init ──
-async function init() {
-  renderStep();
-  await loadProjects();
-}
+document.getElementById('day-label').textContent =
+  new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
 async function loadProjects() {
+  if (allProjects.length) return;
   try {
     const res = await fetch(API + '?type=projects&t=' + Date.now());
     const data = await res.json();
-    if (data.error) throw new Error(data.error);
     allProjects = data.projects || [];
+    deskProjects = [...allProjects];
     filteredProjects = [...allProjects];
-    renderStep();
+    deskFiltered = [...deskProjects];
   } catch(e) {
-    document.getElementById('form-area').innerHTML =
-      '<div class="card"><div class="err">Failed to load projects: ' + e.message + '</div></div>';
+    showToast('Failed to load projects: ' + e.message, 'err');
   }
 }
 
-// ── Step renderer ──
-function renderStep() {
-  updateStepIndicator();
-  const area = document.getElementById('form-area');
-
-  if (currentStep === 1) area.innerHTML = renderStep1();
-  else if (currentStep === 2) area.innerHTML = renderStep2();
-  else if (currentStep === 3) area.innerHTML = renderStep3();
-  else if (currentStep === 4) area.innerHTML = renderStep4();
-  else if (currentStep === 5) area.innerHTML = renderStep5();
-
-  // Attach listeners after render
-  if (currentStep === 1) attachStep1Listeners();
-  if (currentStep === 4) attachStep4Listeners();
+function setMode(m) {
+  mode = m;
+  document.getElementById('mode-floor').classList.toggle('active', m === 'floor');
+  document.getElementById('mode-desk').classList.toggle('active', m === 'desk');
+  if (m === 'floor') renderFloor();
+  else renderDesk();
 }
 
-function updateStepIndicator() {
-  for (let i = 1; i <= 5; i++) {
-    const el = document.getElementById('step-' + i);
-    el.classList.remove('active', 'done');
-    if (i < currentStep) el.classList.add('done');
-    else if (i === currentStep) el.classList.add('active');
+// ══════════════════════════════════════════════
+// FLOOR MODE
+// ══════════════════════════════════════════════
+
+function renderFloor() {
+  const area = document.getElementById('main-area');
+  if (!allProjects.length) {
+    area.innerHTML = '<div class="empty"><span class="spin"></span>Loading projects...</div>';
+    loadProjects().then(() => renderFloor());
+    return;
   }
-  for (let i = 1; i <= 4; i++) {
-    const line = document.getElementById('line-' + i);
-    line.classList.toggle('done', i < currentStep);
-  }
+
+  const deptBar = activeDept
+    ? `<div class="active-dept-bar">
+        <div class="adb-left">
+          <div class="adb-dot"></div>
+          <div class="adb-name">${activeDept.name}</div>
+          <div class="adb-pct">${activeDept.pct}%</div>
+        </div>
+        <button class="adb-change" onclick="changeDept()">Change dept</button>
+      </div>`
+    : '';
+
+  const deptPicker = !activeDept
+    ? `<div class="sec-label">Select Department</div>
+       <div class="dept-grid-floor">
+         ${FLOOR_DEPTS.map(d => `
+           <div class="dept-btn" onclick="selectFloorDept('${d.name}',${d.pct})">
+             <div class="dept-dot"></div>
+             <span class="dept-btn-name">${d.name}</span>
+             <span class="dept-btn-pct">${d.pct}%</span>
+           </div>`).join('')}
+       </div>`
+    : '';
+
+  const projSection = activeDept
+    ? `<div class="sec-label">Projects in <b>${activeDept.name}</b> today</div>
+       <div class="search-wrap">
+         <span class="si-icon">&#128269;</span>
+         <input class="search-input" id="floor-search" type="text" placeholder="Search project..." value="${floorSearch}" oninput="onFloorSearch(this.value)">
+         <span class="si-clear ${floorSearch ? 'vis' : ''}" onclick="clearFloorSearch()">&#215;</span>
+       </div>
+       <div class="proj-list" id="floor-proj-list">
+         ${renderFloorProjects()}
+       </div>`
+    : '';
+
+  area.innerHTML = deptPicker + deptBar + projSection;
 }
 
-// ── Step 1: Project search ──
-function renderStep1() {
-  const count = allProjects.length;
-  return `
-    <div class="card">
-      <div class="card-title">Select Project <span style="color:var(--text3);font-weight:400">(${count} active)</span></div>
-      <div class="search-wrap">
-        <span class="search-icon">&#128269;</span>
-        <input class="search-input" id="proj-search" type="text" placeholder="Search by project name or code..." autocomplete="off" value="">
-        <span class="search-clear" id="search-clear" onclick="clearSearch()">&#215;</span>
+function renderFloorProjects() {
+  const list = filteredProjects;
+  if (!list.length) return '<div class="empty">No projects found</div>';
+  return list.map(p => {
+    const key = p.code + '_' + (activeDept ? activeDept.name : '');
+    const submitted = submittedProjects.has(key);
+    const isExpanded = expandedProject === p.code;
+    const prods = productCache[p.code] || p.products.filter(pr => pr.active);
+    const selSet = selectedProducts[p.code] || new Set();
+
+    return `<div class="proj-row${isExpanded ? ' expanded' : ''}" id="prow-${p.code}">
+      <div class="proj-row-header" onclick="toggleFloorProject('${p.code}')">
+        <div class="proj-left">
+          <div class="proj-name">${p.name || p.code}</div>
+          <div class="proj-meta">${p.code} · ${prods.length} product${prods.length !== 1 ? 's' : ''}</div>
+        </div>
+        <div class="proj-right">
+          ${submitted ? '<span class="proj-submitted-tag">✓ Done</span>' : ''}
+          <div class="proj-poc">${p.pmc ? p.pmc : ''}</div>
+          <span class="proj-chevron">▼</span>
+        </div>
       </div>
-      <div class="proj-list" id="proj-list">${renderProjItems(filteredProjects.slice(0, 30))}</div>
+      ${isExpanded ? renderProdPicker(p, prods, selSet) : ''}
     </div>`;
+  }).join('');
 }
 
-function renderProjItems(projects) {
-  if (!projects.length) return '<div class="empty">No projects found</div>';
-  return projects.map(p => `
-    <div class="proj-item" onclick="selectProject('${p.code}')">
-      <div>
-        <div class="proj-name">${p.name || p.code}</div>
-        <div class="proj-meta">${p.code} · ${p.products.filter(pr=>pr.active).length} active product(s)</div>
+function renderProdPicker(proj, prods, selSet) {
+  const allSel = prods.length > 0 && selSet.size === prods.length;
+  return `<div class="prod-picker">
+    <div class="pick-all-row">
+      <span class="sec-label" style="margin-bottom:0">Select products</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        ${selSet.size > 0 ? '<span class="pick-sel-count">' + selSet.size + ' selected</span>' : ''}
+        <button class="pick-all-btn" onclick="togglePickAll('${proj.code}')">${allSel ? 'Deselect all' : 'Select all'}</button>
       </div>
-      <div class="proj-poc">
-        ${p.pmc ? '<div>' + p.pmc + '</div>' : ''}
-        ${p.bd  ? '<div style="color:var(--text3)">' + p.bd + '</div>' : ''}
-      </div>
-    </div>`).join('');
+    </div>
+    <div class="prod-picker-grid">
+      ${prods.map(pr => `
+        <div class="prod-check-item${selSet.has(pr.code) ? ' checked' : ''}" onclick="toggleFloorProd('${proj.code}','${pr.code}')">
+          <div class="pci-box">${selSet.has(pr.code) ? '✓' : ''}</div>
+          <div>
+            <div class="pci-name">${pr.name || pr.code}</div>
+            <div class="pci-code">${pr.code}${pr.qty ? ' · ' + pr.qty : ''}</div>
+          </div>
+        </div>`).join('')}
+    </div>
+    <textarea class="pick-comment" id="comment-${proj.code}" placeholder="Observation (optional)..." rows="2"></textarea>
+    <div class="pick-submit-row">
+      <button class="pick-cancel" onclick="collapseProject('${proj.code}')">Cancel</button>
+      <button class="pick-submit" onclick="submitFloorEntry('${proj.code}')" ${selSet.size === 0 ? 'disabled' : ''} id="psub-${proj.code}">
+        Log ${selSet.size} product${selSet.size !== 1 ? 's' : ''} →
+      </button>
+    </div>
+  </div>`;
 }
 
-function attachStep1Listeners() {
-  const input = document.getElementById('proj-search');
-  if (!input) return;
-  input.addEventListener('input', () => {
-    const q = input.value.toLowerCase().trim();
-    document.getElementById('search-clear').classList.toggle('vis', q.length > 0);
-    filteredProjects = q
-      ? allProjects.filter(p => p.name.toLowerCase().includes(q) || p.code.toLowerCase().includes(q))
-      : [...allProjects];
-    document.getElementById('proj-list').innerHTML = renderProjItems(filteredProjects.slice(0, 30));
-  });
-  input.focus();
-}
-
-function clearSearch() {
-  document.getElementById('proj-search').value = '';
-  document.getElementById('search-clear').classList.remove('vis');
+function selectFloorDept(name, pct) {
+  activeDept = { name, pct };
   filteredProjects = [...allProjects];
-  document.getElementById('proj-list').innerHTML = renderProjItems(filteredProjects.slice(0, 30));
-  document.getElementById('proj-search').focus();
+  floorSearch = '';
+  expandedProject = null;
+  renderFloor();
 }
 
-async function selectProject(code) {
-  selectedProject = allProjects.find(p => p.code === code);
-  selectedProducts.clear();
-  // Load products
-  try {
-    const res = await fetch(API + '?type=products&code=' + code + '&t=' + Date.now());
-    const data = await res.json();
-    allProducts = data.products || [];
-  } catch(e) {
-    allProducts = selectedProject.products.filter(p => p.active);
-  }
-  currentStep = 2;
-  renderStep();
+function changeDept() {
+  activeDept = null;
+  expandedProject = null;
+  floorSearch = '';
+  renderFloor();
 }
 
-// ── Step 2: Product selection ──
-function renderStep2() {
-  const proj = selectedProject;
-  const prods = allProducts;
-  const selCount = selectedProducts.size;
-
-  return `
-    <div class="card" style="margin-bottom:12px">
-      <div class="selected-proj">
-        <div>
-          <div class="sel-proj-name">${proj.name || proj.code}</div>
-          <div class="sel-proj-meta">${proj.code} ${proj.pmc ? '· PMC: ' + proj.pmc : ''} ${proj.bd ? '· BD: ' + proj.bd : ''}</div>
-        </div>
-        <button class="change-btn" onclick="changeProject()">Change</button>
-      </div>
-    </div>
-    <div class="card">
-      <div class="select-all-row">
-        <div class="card-title" style="margin-bottom:0">Select Products</div>
-        <div style="display:flex;align-items:center;gap:8px">
-          ${selCount > 0 ? '<span class="selected-count">' + selCount + ' selected</span>' : ''}
-          <button class="select-all-btn" onclick="toggleSelectAll()">${selCount === prods.length ? 'Deselect All' : 'Select All'}</button>
-        </div>
-      </div>
-      ${prods.length === 0
-        ? '<div class="empty">No active products found for this project.</div>'
-        : '<div class="prod-grid">' + prods.map(p => `
-          <div class="prod-chip${selectedProducts.has(p.code) ? ' selected' : ''}" onclick="toggleProduct('${p.code}')">
-            <div class="prod-check">${selectedProducts.has(p.code) ? '✓' : ''}</div>
-            <div class="prod-info">
-              <div class="prod-chip-name">${p.name || p.code}</div>
-              <div class="prod-chip-code">${p.code}${p.qty ? ' · Qty ' + p.qty : ''}</div>
-            </div>
-          </div>`).join('') + '</div>'
-      }
-      <div class="btn-row" style="margin-top:16px">
-        <button class="btn btn-secondary" onclick="goBack()">← Back</button>
-        <button class="btn btn-primary" onclick="goToStep3()" ${selectedProducts.size === 0 ? 'disabled' : ''}>
-          Continue with ${selectedProducts.size || ''} product${selectedProducts.size !== 1 ? 's' : ''} →
-        </button>
-      </div>
-    </div>`;
+function onFloorSearch(val) {
+  floorSearch = val;
+  document.querySelector('.si-clear') && document.querySelector('.si-clear').classList.toggle('vis', val.length > 0);
+  const q = val.toLowerCase();
+  filteredProjects = q
+    ? allProjects.filter(p => p.name.toLowerCase().includes(q) || p.code.toLowerCase().includes(q))
+    : [...allProjects];
+  document.getElementById('floor-proj-list').innerHTML = renderFloorProjects();
 }
 
-function toggleProduct(code) {
-  if (selectedProducts.has(code)) selectedProducts.delete(code);
-  else selectedProducts.add(code);
-  renderStep();
+function clearFloorSearch() {
+  floorSearch = '';
+  filteredProjects = [...allProjects];
+  renderFloor();
 }
 
-function toggleSelectAll() {
-  if (selectedProducts.size === allProducts.length) {
-    selectedProducts.clear();
+async function toggleFloorProject(code) {
+  if (expandedProject === code) {
+    expandedProject = null;
   } else {
-    allProducts.forEach(p => selectedProducts.add(p.code));
+    expandedProject = code;
+    // Load products if not cached
+    if (!productCache[code]) {
+      try {
+        const res = await fetch(API + '?type=products&code=' + code + '&t=' + Date.now());
+        const data = await res.json();
+        productCache[code] = data.products || [];
+      } catch(e) {
+        const proj = allProjects.find(p => p.code === code);
+        productCache[code] = proj ? proj.products.filter(pr => pr.active) : [];
+      }
+      if (!selectedProducts[code]) selectedProducts[code] = new Set();
+    }
   }
-  renderStep();
+  document.getElementById('floor-proj-list').innerHTML = renderFloorProjects();
 }
 
-function goToStep3() {
-  if (selectedProducts.size === 0) return;
-  currentStep = 3;
-  renderStep();
+function collapseProject(code) {
+  expandedProject = null;
+  document.getElementById('floor-proj-list').innerHTML = renderFloorProjects();
 }
 
-// ── Step 3: Department ──
-function renderStep3() {
-  return `
-    <div class="card" style="margin-bottom:12px">
-      <div class="selected-proj">
-        <div>
-          <div class="sel-proj-name">${selectedProject.name || selectedProject.code}</div>
-          <div class="sel-proj-meta">${selectedProducts.size} product${selectedProducts.size !== 1 ? 's' : ''} selected</div>
-        </div>
-        <button class="change-btn" onclick="changeProject()">Change project</button>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title">Current Department / Stage</div>
-      <div class="dept-grid">
-        ${DEPT_PIPELINE.map(d => `
-          <div class="dept-chip${selectedDept === d.name ? ' selected' : ''}" onclick="selectDept('${d.name}')">
-            <div class="dept-dot"></div>
-            <span class="dept-name">${d.name}</span>
-            <span class="dept-pct">${d.pct}%</span>
-          </div>`).join('')}
-      </div>
-      <div class="btn-row" style="margin-top:16px">
-        <button class="btn btn-secondary" onclick="goBack()">← Back</button>
-        <button class="btn btn-primary" onclick="goToStep4()" ${!selectedDept ? 'disabled' : ''}>
-          Continue →
-        </button>
-      </div>
-    </div>`;
+function toggleFloorProd(projCode, prodCode) {
+  if (!selectedProducts[projCode]) selectedProducts[projCode] = new Set();
+  if (selectedProducts[projCode].has(prodCode)) selectedProducts[projCode].delete(prodCode);
+  else selectedProducts[projCode].add(prodCode);
+  // Re-render just this project row
+  const proj = allProjects.find(p => p.code === projCode);
+  const prods = productCache[projCode] || [];
+  const selSet = selectedProducts[projCode];
+  const rowEl = document.getElementById('prow-' + projCode);
+  if (rowEl) {
+    const picker = rowEl.querySelector('.prod-picker');
+    if (picker) picker.outerHTML = renderProdPicker(proj, prods, selSet);
+    // Re-attach
+    rowEl.innerHTML = rowEl.querySelector('.proj-row-header').outerHTML + renderProdPicker(proj, prods, selSet);
+  } else {
+    document.getElementById('floor-proj-list').innerHTML = renderFloorProjects();
+  }
 }
 
-function selectDept(name) {
-  selectedDept = name;
-  renderStep();
+function togglePickAll(projCode) {
+  const prods = productCache[projCode] || [];
+  if (!selectedProducts[projCode]) selectedProducts[projCode] = new Set();
+  if (selectedProducts[projCode].size === prods.length) {
+    selectedProducts[projCode].clear();
+  } else {
+    prods.forEach(p => selectedProducts[projCode].add(p.code));
+  }
+  document.getElementById('floor-proj-list').innerHTML = renderFloorProjects();
 }
 
-function goToStep4() {
-  if (!selectedDept) return;
-  currentStep = 4;
-  renderStep();
-}
+async function submitFloorEntry(projCode) {
+  const selSet = selectedProducts[projCode];
+  if (!selSet || selSet.size === 0) return;
+  const btn = document.getElementById('psub-' + projCode);
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spin"></span>Saving...'; }
 
-// ── Step 4: Comment ──
-function renderStep4() {
-  return `
-    <div class="card" style="margin-bottom:12px">
-      <div class="selected-proj">
-        <div>
-          <div class="sel-proj-name">${selectedProject.name || selectedProject.code}</div>
-          <div class="sel-proj-meta" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px">
-            <span>${selectedProducts.size} product${selectedProducts.size !== 1 ? 's' : ''}</span>
-            <span>·</span>
-            <span class="dept-badge"><span class="dept-badge-dot"></span>${selectedDept}</span>
-          </div>
-        </div>
-        <button class="change-btn" onclick="changeProject()">Start over</button>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title">Observation / Comment <span style="color:var(--text3);font-weight:400">(optional)</span></div>
-      <textarea class="comment-input" id="comment-input" placeholder="e.g. Frame ready, polishing started. Delivery of fabric pending for ottoman..." maxlength="500">${comment}</textarea>
-      <div class="char-count"><span id="char-count">${comment.length}</span>/500</div>
-      <div class="btn-row" style="margin-top:16px">
-        <button class="btn btn-secondary" onclick="goBack()">← Back</button>
-        <button class="btn btn-primary" onclick="goToStep5()">Review & Submit →</button>
-      </div>
-    </div>`;
-}
-
-function attachStep4Listeners() {
-  const ta = document.getElementById('comment-input');
-  if (!ta) return;
-  ta.addEventListener('input', () => {
-    comment = ta.value;
-    document.getElementById('char-count').textContent = comment.length;
-  });
-}
-
-function goToStep5() {
-  const ta = document.getElementById('comment-input');
-  if (ta) comment = ta.value;
-  currentStep = 5;
-  renderStep();
-}
-
-// ── Step 5: Review & Submit ──
-function renderStep5() {
-  const selectedProdList = allProducts.filter(p => selectedProducts.has(p.code));
-  return `
-    <div class="card">
-      <div class="card-title">Review Entry</div>
-      <div class="summary-card">
-        <div class="summary-row">
-          <span class="summary-label">Project</span>
-          <span class="summary-val">${selectedProject.name || selectedProject.code}<br><span style="font-size:11px;font-family:DM Mono,monospace;color:var(--text3);font-weight:400">${selectedProject.code}</span></span>
-        </div>
-        <div class="summary-row">
-          <span class="summary-label">Products (${selectedProdList.length})</span>
-          <div class="summary-products">
-            ${selectedProdList.map(p => `<span class="summary-prod-tag">${p.name || p.code}</span>`).join('')}
-          </div>
-        </div>
-        <div class="summary-row">
-          <span class="summary-label">Department</span>
-          <span class="summary-val"><span class="dept-badge"><span class="dept-badge-dot"></span>${selectedDept}</span></span>
-        </div>
-        ${comment ? `<div class="summary-row">
-          <span class="summary-label">Comment</span>
-          <span class="summary-val" style="font-size:12px;font-weight:400;color:var(--text2);max-width:300px;text-align:right">${comment}</span>
-        </div>` : ''}
-        <div class="summary-row">
-          <span class="summary-label">Time</span>
-          <span class="summary-val" style="font-size:12px;font-weight:400;color:var(--text2)">${new Date().toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</span>
-        </div>
-      </div>
-      <div id="submit-err"></div>
-      <div class="btn-row">
-        <button class="btn btn-secondary" onclick="goBack()" id="back-btn">← Edit</button>
-        <button class="btn btn-primary btn-full" onclick="submitEntry()" id="submit-btn">
-          Submit ${selectedProdList.length} entr${selectedProdList.length !== 1 ? 'ies' : 'y'} →
-        </button>
-      </div>
-    </div>`;
-}
-
-async function submitEntry() {
-  if (isSubmitting) return;
-  isSubmitting = true;
-  const submitBtn = document.getElementById('submit-btn');
-  const backBtn   = document.getElementById('back-btn');
-  submitBtn.innerHTML = '<span class="spin"></span>Submitting...';
-  submitBtn.disabled = true;
-  backBtn.disabled = true;
-
-  const selectedProdList = allProducts.filter(p => selectedProducts.has(p.code));
+  const proj = allProjects.find(p => p.code === projCode);
+  const prods = productCache[projCode] || [];
+  const comment = document.getElementById('comment-' + projCode)?.value || '';
+  const dept = activeDept.name;
   const errors = [];
 
-  for (const prod of selectedProdList) {
+  for (const prodCode of selSet) {
+    const prod = prods.find(p => p.code === prodCode);
     try {
       const res = await fetch(API, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           type: 'entry',
-          projectCode:  selectedProject.code,
-          projectName:  selectedProject.name || selectedProject.code,
-          productCode:  prod.code,
-          productName:  prod.name || prod.code,
-          department:   selectedDept,
-          comment:      comment,
+          projectCode: projCode,
+          projectName: proj?.name || projCode,
+          productCode: prodCode,
+          productName: prod?.name || prodCode,
+          department: dept,
+          comment,
         }),
       });
       const data = await res.json();
-      if (data.error) errors.push(prod.name + ': ' + data.error);
+      if (data.error) errors.push(data.error);
     } catch(e) {
-      errors.push(prod.name + ': ' + e.message);
+      errors.push(e.message);
     }
   }
 
-  isSubmitting = false;
-
   if (errors.length) {
-    submitBtn.disabled = false;
-    submitBtn.innerHTML = 'Retry Submit →';
-    backBtn.disabled = false;
-    document.getElementById('submit-err').innerHTML =
-      '<div class="err">Some entries failed:<br>' + errors.join('<br>') + '</div>';
+    showToast('Some failed: ' + errors[0], 'err');
+    if (btn) { btn.disabled = false; btn.textContent = 'Retry →'; }
     return;
   }
 
-  // Success
-  showSuccess(selectedProdList.length);
+  submittedProjects.add(projCode + '_' + dept);
+  selectedProducts[projCode] = new Set();
+  expandedProject = null;
+  showToast('✓ ' + selSet.size + ' product' + (selSet.size !== 1 ? 's' : '') + ' logged for ' + (proj?.name || projCode), 'success');
+  document.getElementById('floor-proj-list').innerHTML = renderFloorProjects();
 }
 
-function showSuccess(count) {
-  document.getElementById('form-area').innerHTML = `
-    <div class="success-card">
-      <div class="success-icon">✅</div>
-      <div class="success-title">${count} entr${count !== 1 ? 'ies' : 'y'} logged</div>
-      <div class="success-sub" style="margin-bottom:20px">${selectedProject.name} · ${selectedDept}</div>
-      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
-        <button class="btn btn-primary" onclick="logAnother()">Log another project</button>
-        <button class="btn btn-secondary" onclick="logSameProject()">Same project, different update</button>
+// ══════════════════════════════════════════════
+// DESK MODE
+// ══════════════════════════════════════════════
+
+function renderDesk() {
+  const area = document.getElementById('main-area');
+  if (!allProjects.length) {
+    area.innerHTML = '<div class="empty"><span class="spin"></span>Loading projects...</div>';
+    loadProjects().then(() => renderDesk());
+    return;
+  }
+
+  let html = '<div class="desk-form">';
+
+  if (!deskSelected) {
+    html += `<div class="sec-label">Search Project</div>
+      <div class="desk-proj-search">
+        <div class="search-wrap">
+          <span class="si-icon">&#128269;</span>
+          <input class="search-input" id="desk-search" type="text" placeholder="Project name or code..." oninput="onDeskSearch(this.value)" autocomplete="off">
+          <span class="si-clear" id="desk-clear" onclick="clearDeskSearch()">&#215;</span>
+        </div>
+        <div class="proj-list" id="desk-proj-list" style="margin-top:8px">${renderDeskProjList()}</div>
+      </div>`;
+  } else {
+    html += `<div class="desk-selected-proj">
+      <div>
+        <div class="dsp-name">${deskSelected.name || deskSelected.code}</div>
+        <div class="dsp-meta">${deskSelected.code}${deskSelected.pmc ? ' · ' + deskSelected.pmc : ''}</div>
+      </div>
+      <button class="dsp-change" onclick="clearDeskProject()">Change</button>
+    </div>`;
+
+    // Products
+    html += `<div class="sec-label">Select Products</div>
+      <div class="desk-prod-list">
+        ${deskProducts.map(p => `
+          <div class="desk-prod-row${deskChecked.has(p.code) ? ' checked' : ''}" onclick="toggleDeskProd('${p.code}')">
+            <div class="dpr-box">${deskChecked.has(p.code) ? '✓' : ''}</div>
+            <div class="dpr-info">
+              <div class="dpr-name">${p.name || p.code}</div>
+              <div class="dpr-code">${p.code}${p.qty ? ' · Qty ' + p.qty : ''}</div>
+            </div>
+          </div>`).join('')}
+      </div>`;
+
+    // Optional dept
+    html += `<div class="dept-opt-row">
+      <div class="dept-opt-label">Department <span style="color:var(--text3);font-size:9px">(optional)</span></div>
+      <div class="dept-opt-wrap">
+        ${ALL_DEPTS.map(d => `<button class="dept-tag-btn${deskDept === d.name ? ' sel' : ''}" onclick="setDeskDept('${d.name}')">${d.name}</button>`).join('')}
+        ${deskDept ? '<button class="dept-tag-btn clear-btn" onclick="setDeskDept(\'\')">✕ Clear</button>' : ''}
       </div>
     </div>`;
-  // Reset steps
-  for (let i = 1; i <= 5; i++) {
-    const el = document.getElementById('step-' + i);
-    el.classList.remove('active');
-    el.classList.add('done');
+
+    // Comment
+    html += `<div class="comment-wrap">
+      <div class="comment-label">Comment <span style="color:var(--text3);font-size:9px">(optional)</span></div>
+      <textarea class="comment-ta" id="desk-comment" placeholder="Notes, observations, delivery updates..." oninput="deskComment=this.value">${deskComment}</textarea>
+    </div>`;
+
+    const canSubmit = deskChecked.size > 0;
+    html += `<button class="submit-btn" onclick="submitDeskEntry()" ${canSubmit ? '' : 'disabled'} id="desk-submit-btn">
+      Submit ${deskChecked.size > 0 ? deskChecked.size + ' product' + (deskChecked.size !== 1 ? 's' : '') : ''} →
+    </button>`;
   }
+
+  html += '</div>';
+  area.innerHTML = html;
 }
 
-function logAnother() {
-  selectedProject = null;
-  allProducts = [];
-  selectedProducts.clear();
-  selectedDept = '';
-  comment = '';
-  currentStep = 1;
-  filteredProjects = [...allProjects];
-  renderStep();
+function renderDeskProjList() {
+  const list = deskFiltered.slice(0, 40);
+  if (!list.length) return '<div class="empty">No projects found</div>';
+  return list.map(p => `
+    <div class="proj-item" onclick="selectDeskProject('${p.code}')" style="padding:11px 13px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:8px;transition:background .1s" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+      <div>
+        <div style="font-size:13px;font-weight:500">${p.name || p.code}</div>
+        <div style="font-size:10px;color:var(--text3);font-family:DM Mono,monospace;margin-top:2px">${p.code} · ${p.products.filter(pr=>pr.active).length} products</div>
+      </div>
+      <div style="font-size:10px;color:var(--text3);text-align:right">${p.pmc || ''}</div>
+    </div>`).join('');
 }
 
-function logSameProject() {
-  selectedProducts.clear();
-  selectedDept = '';
-  comment = '';
-  currentStep = 2;
-  renderStep();
+function onDeskSearch(val) {
+  document.getElementById('desk-clear').classList.toggle('vis', val.length > 0);
+  const q = val.toLowerCase();
+  deskFiltered = q
+    ? deskProjects.filter(p => p.name.toLowerCase().includes(q) || p.code.toLowerCase().includes(q))
+    : [...deskProjects];
+  const list = document.getElementById('desk-proj-list');
+  if (list) list.innerHTML = renderDeskProjList();
 }
 
-// ── Navigation ──
-function goBack() {
-  if (currentStep > 1) { currentStep--; renderStep(); }
+function clearDeskSearch() {
+  const inp = document.getElementById('desk-search');
+  if (inp) inp.value = '';
+  document.getElementById('desk-clear').classList.remove('vis');
+  deskFiltered = [...deskProjects];
+  const list = document.getElementById('desk-proj-list');
+  if (list) list.innerHTML = renderDeskProjList();
 }
 
-function changeProject() {
-  selectedProject = null;
-  allProducts = [];
-  selectedProducts.clear();
-  selectedDept = '';
-  comment = '';
-  currentStep = 1;
-  filteredProjects = [...allProjects];
-  renderStep();
+async function selectDeskProject(code) {
+  deskSelected = allProjects.find(p => p.code === code);
+  deskChecked = new Set();
+  deskDept = '';
+  deskComment = '';
+  // Load products
+  if (!productCache[code]) {
+    try {
+      const res = await fetch(API + '?type=products&code=' + code + '&t=' + Date.now());
+      const data = await res.json();
+      productCache[code] = data.products || [];
+    } catch(e) {
+      productCache[code] = deskSelected.products.filter(pr => pr.active);
+    }
+  }
+  deskProducts = productCache[code];
+  renderDesk();
+}
+
+function clearDeskProject() {
+  deskSelected = null;
+  deskProducts = [];
+  deskChecked = new Set();
+  deskDept = '';
+  deskComment = '';
+  deskFiltered = [...deskProjects];
+  renderDesk();
+}
+
+function toggleDeskProd(code) {
+  if (deskChecked.has(code)) deskChecked.delete(code);
+  else deskChecked.add(code);
+  renderDesk();
+}
+
+function setDeskDept(name) {
+  deskDept = name;
+  renderDesk();
+}
+
+async function submitDeskEntry() {
+  if (deskChecked.size === 0) return;
+  const btn = document.getElementById('desk-submit-btn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spin"></span>Saving...'; }
+
+  const errors = [];
+  for (const prodCode of deskChecked) {
+    const prod = deskProducts.find(p => p.code === prodCode);
+    try {
+      const res = await fetch(API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'entry',
+          projectCode:  deskSelected.code,
+          projectName:  deskSelected.name || deskSelected.code,
+          productCode:  prodCode,
+          productName:  prod?.name || prodCode,
+          department:   deskDept || '',
+          comment:      deskComment,
+        }),
+      });
+      const data = await res.json();
+      if (data.error) errors.push(data.error);
+    } catch(e) {
+      errors.push(e.message);
+    }
+  }
+
+  if (errors.length) {
+    showToast('Some failed: ' + errors[0], 'err');
+    if (btn) { btn.disabled = false; btn.textContent = 'Retry →'; }
+    return;
+  }
+
+  const count = deskChecked.size;
+  const name = deskSelected.name;
+  showToast('✓ ' + count + ' product' + (count !== 1 ? 's' : '') + ' logged for ' + name, 'success');
+  // Reset but keep project selected for quick follow-up
+  deskChecked = new Set();
+  deskDept = '';
+  deskComment = '';
+  renderDesk();
+}
+
+// ── Toast ──
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + (type || '');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
 }
 
 // ── Start ──
-init();
+loadProjects();
 </script>
 </body>
 </html>
