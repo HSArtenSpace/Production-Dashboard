@@ -334,7 +334,7 @@ let countdownTimer = null;
 let isFirstLoad    = true;
 let dailyChart     = null;
 const drawerOpen   = {v:false};
-const secOpen      = {kpis:false, filters:false, top:false, reorder:false, avg:false, daily:false};
+const secOpen      = {action:false, kpis:false, filters:false, top:false, reorder:false, avg:false, daily:false};
 const detailCache  = {};
 
 // ── Helpers ──────────────────────────────────────────────────
@@ -490,7 +490,9 @@ function exportReorderList(){
     : 'Window: 13th to 27th — stock up for this month + next month';
 
   const rows = storeData.items
-    .filter(i => (i[orderField]||0) > 0)
+    // Eligibility is date-independent: only items already below their safety stock
+    // get listed at all. The date window only changes HOW MUCH to order for them.
+    .filter(i => i.currentStock < i.safetyStock && (i[orderField]||0) > 0)
     .sort((a,b) => b[orderField] - a[orderField])
     .map(i => ({
       'Material Code':        i.code,
@@ -663,20 +665,23 @@ function renderDrawer(){
     ? 'Stock up to 1 month avg (28th–12th window)'
     : 'Stock for this + next month (13th–27th window)';
   const orderField = inWindow1 ? 'orderQty1' : 'orderQty2';
-  const orderCount = (d.items||[]).filter(i => (i[orderField]||0) > 0).length;
+  const orderCount = (d.items||[]).filter(i => i.currentStock < i.safetyStock && (i[orderField]||0) > 0).length;
 
   document.getElementById('drawer-body').innerHTML = `
-    <!-- Action Required — always visible, not collapsible, first thing in the drawer -->
+    <!-- Action Required — collapsed by default like every other section -->
     <div class="d-section" style="border-bottom:2px solid var(--border2)">
-      <div class="d-sec-head" style="cursor:default">
+      <div class="d-sec-head" onclick="toggleSection('action')">
         <span class="d-sec-title">📋 Action required</span>
+        <span class="d-sec-meta"><span>${negCount+(d.needsReorderCount||0)+(d.belowHalfCount||0)+(d.overstockedCount||0)} flags</span><span id="dc-action">${secOpen.action?'▾':'▸'}</span></span>
       </div>
-      <div class="d-sec-body" style="display:flex;flex-wrap:wrap;gap:8px;padding:4px 14px 14px">${actionHtml}</div>
-      <div style="padding:0 14px 14px">
-        <button class="reorder-cta" onclick="exportReorderList()">
-          ⬇ Download reorder list <span class="reorder-cta-count">${orderCount} items</span>
-        </button>
-        <div style="font-size:9.5px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:6px;text-align:center">${windowLabel}</div>
+      <div class="d-sec-body" id="ds-action" style="display:${secOpen.action?'':'none'}">
+        <div style="display:flex;flex-wrap:wrap;gap:8px;padding:4px 14px 14px">${actionHtml}</div>
+        <div style="padding:0 14px 14px">
+          <button class="reorder-cta" onclick="exportReorderList()">
+            ⬇ Download reorder list <span class="reorder-cta-count">${orderCount} items</span>
+          </button>
+          <div style="font-size:9.5px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:6px;text-align:center">${windowLabel}</div>
+        </div>
       </div>
     </div>
 
