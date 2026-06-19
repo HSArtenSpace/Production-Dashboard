@@ -494,19 +494,15 @@ async function submitFloorEntry(projCode) {
   for (const prodCode of selSet) {
     const prod = prods.find(p => p.code === prodCode);
     try {
-      const res = await fetch(API, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'entry',
-          projectCode: projCode,
-          projectName: proj?.name || projCode,
-          productCode: prodCode,
-          productName: prod?.name || prodCode,
-          department: dept,
-          comment,
-        }),
-      });
+      const url = API + '?type=entry'
+        + '&projectCode=' + encodeURIComponent(projCode)
+        + '&projectName=' + encodeURIComponent(proj?.name || projCode)
+        + '&productCode='  + encodeURIComponent(prodCode)
+        + '&productName='  + encodeURIComponent(prod?.name || prodCode)
+        + '&department='   + encodeURIComponent(dept)
+        + '&comment='      + encodeURIComponent(comment)
+        + '&t='            + Date.now();
+      const res = await fetch(url);
       const data = await res.json();
       if (data.error) errors.push(data.error);
     } catch(e) {
@@ -679,19 +675,15 @@ async function submitDeskEntry() {
   for (const prodCode of deskChecked) {
     const prod = deskProducts.find(p => p.code === prodCode);
     try {
-      const res = await fetch(API, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'entry',
-          projectCode:  deskSelected.code,
-          projectName:  deskSelected.name || deskSelected.code,
-          productCode:  prodCode,
-          productName:  prod?.name || prodCode,
-          department:   deskDept || '',
-          comment:      deskComment,
-        }),
-      });
+      const url = API + '?type=entry'
+        + '&projectCode=' + encodeURIComponent(deskSelected.code)
+        + '&projectName=' + encodeURIComponent(deskSelected.name || deskSelected.code)
+        + '&productCode='  + encodeURIComponent(prodCode)
+        + '&productName='  + encodeURIComponent(prod?.name || prodCode)
+        + '&department='   + encodeURIComponent(deskDept || '')
+        + '&comment='      + encodeURIComponent(deskComment)
+        + '&t='            + Date.now();
+      const res = await fetch(url);
       const data = await res.json();
       if (data.error) errors.push(data.error);
     } catch(e) {
