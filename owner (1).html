@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Artenspace · Tools</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#080808;--bg2:#111;--bg3:#181818;--bg4:#202020;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.11);
+  --text:#f0f0f0;--text2:#888;--text3:#444;
+  --orange:#f05423;
+  --blue:#3b82f6;--blue-dim:rgba(59,130,246,0.08);
+  --amber:#f59e0b;--amber-dim:rgba(245,158,11,0.08);
+  --green:#22c55e;--green-dim:rgba(34,197,94,0.08);
+  --purple:#a855f7;--purple-dim:rgba(168,85,247,0.08);
+  --orange-dim:rgba(240,84,35,0.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:14px;display:flex;align-items:center;justify-content:center}
+
+/* subtle grid */
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,.012) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.012) 1px,transparent 1px);background-size:48px 48px;pointer-events:none}
+
+.shell{position:relative;z-index:1;width:100%;max-width:560px;padding:0 20px;display:flex;flex-direction:column;align-items:center;gap:0}
+
+/* Logo */
+.logo-wrap{margin-bottom:32px;text-align:center}
+.brand-logo{height:26px;width:auto;opacity:.9}
+.logo-divider{width:1px;height:28px;background:linear-gradient(to bottom,transparent,var(--orange),transparent);margin:16px auto 0}
+
+/* Tool cards */
+.cards{width:100%;display:flex;flex-direction:column;gap:8px}
+
+.tool-card{display:flex;align-items:center;gap:16px;padding:16px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;text-decoration:none;color:var(--text);transition:all .18s;position:relative;overflow:hidden}
+.tool-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .18s;pointer-events:none;border-radius:12px}
+.tool-card:hover{border-color:var(--border2);transform:translateY(-1px)}
+.tool-card:hover::before{opacity:1}
+
+.tool-card.orange::before{background:radial-gradient(ellipse at left center,rgba(240,84,35,.08),transparent 70%)}
+.tool-card.orange:hover{border-color:rgba(240,84,35,.25)}
+.tool-card.blue::before{background:radial-gradient(ellipse at left center,rgba(59,130,246,.08),transparent 70%)}
+.tool-card.blue:hover{border-color:rgba(59,130,246,.25)}
+.tool-card.green::before{background:radial-gradient(ellipse at left center,rgba(34,197,94,.08),transparent 70%)}
+.tool-card.green:hover{border-color:rgba(34,197,94,.25)}
+.tool-card.amber::before{background:radial-gradient(ellipse at left center,rgba(245,158,11,.08),transparent 70%)}
+.tool-card.amber:hover{border-color:rgba(245,158,11,.25)}
+
+.tool-icon{font-size:20px;flex-shrink:0;width:36px;text-align:center}
+.tool-body{flex:1;min-width:0}
+.tool-name{font-size:14px;font-weight:600;margin-bottom:2px}
+.tool-desc{font-size:11px;color:var(--text3);line-height:1.4}
+.tool-meta{font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);margin-top:1px}
+.tool-arrow{font-size:13px;color:var(--text3);flex-shrink:0;transition:transform .18s,color .18s}
+.tool-card:hover .tool-arrow{transform:translateX(3px);color:var(--text2)}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="logo-wrap">
+    <svg class="brand-logo" viewBox="0 0 2260.8 629.4" xmlns="http://www.w3.org/2000/svg">
+      <style>.st0{fill:#F05423;}</style>
+      <g><g>
+        <path class="st0" d="M1329.1,402.7c126.7,0,253.5,0,381.1,0c0-21,0-41.9,0-63.9c-102.3,0-204.3,0-307,0c0-20.5,0-39.8,0-60.3c79.1,0,158.2,0,237.8,0c0-22,0-42.9,0-64.9c-79.4,0-158.5,0-237.9,0c0-20.4,0-39.8,0-60.2c102.6,0,204.6,0,307.2,0c0-21.9,0-42.9,0-64.8c-127.5,0-253.9,0-381.2,0C1329.1,193.3,1329.1,297.6,1329.1,402.7z"/>
+        <path class="st0" d="M903.9,88.5v65.3c51.5-0.2,103.1-0.1,154.5-0.1c2.1,0,4.2,0.3,7.3,0.5v248.9h0.1h73.5h0.1V154.2c3.1-0.2,5.2-0.5,7.3-0.5c51.5,0,103.1-0.1,154.5,0.1V88.5c-66.3-0.3-132.5,0-198.8,0.1C1036.4,88.5,970.2,88.2,903.9,88.5z"/>
+        <path class="st0" d="M208.2,88.4L94.1,402.7h78.8l101.6-280c4.2-11.6,20.6-11.6,24.8,0l101.6,280h78.8L365.7,88.4H208.2z"/>
+        <path class="st0" d="M685.8,277.1h105.4c52.1,0,94.4-42.3,94.4-94.4s-42.3-94.4-94.4-94.4H506v314.3h74V152.9h201.9c16.4,0,29.8,13.3,29.8,29.8c0,16.4-13.3,29.8-29.8,29.8H680.4c-39,0-70.5,31.6-70.5,70.5c0,32.6,22.3,60.9,54,68.6l194.4,50.4l15.2-62.8l-189.1-49.1C676.7,288.2,678,277.1,685.8,277.1z"/>
+        <path class="st0" d="M2092.7,88.3l0.1,280c-4.2,11.6-20.6,11.6-24.8,0l-55.9-95.3L1903.7,88.3h-0.1h-78.6h-0.1h-0.1h-78.6v314.3h74l-0.1-280c4.2-11.6,20.6-11.6,24.8,0l54.3,92.5l109.9,187.5h0.1h78.6h0.1h0.1h78.6V88.3H2092.7z"/>
+      </g></g>
+    </svg>
+    <div class="logo-divider"></div>
+  </div>
+
+  <div class="cards">
+    <a class="tool-card orange" href="https://hsartenspace.github.io/Production-Dashboard/index.html" target="_blank">
+      <span class="tool-icon">🏭</span>
+      <div class="tool-body">
+        <div class="tool-name">Production Dashboard</div>
+        <div class="tool-desc">Material-based department tracking, WIP / hold / dispatch status</div>
+        <div class="tool-meta">Material data · Read-only</div>
+      </div>
+      <span class="tool-arrow">→</span>
+    </a>
+
+    <a class="tool-card blue" href="https://hsartenspace.github.io/Production-Dashboard/store.html" target="_blank">
+      <span class="tool-icon">📦</span>
+      <div class="tool-body">
+        <div class="tool-name">Store Intelligence</div>
+        <div class="tool-desc">Inventory levels, reorder alerts, consumption trends, 400+ SKUs</div>
+        <div class="tool-meta">Inventory · Read-only</div>
+      </div>
+      <span class="tool-arrow">→</span>
+    </a>
+
+    <a class="tool-card green" href="https://hsartenspace.github.io/Production-Dashboard/viewer.html" target="_blank">
+      <span class="tool-icon">📊</span>
+      <div class="tool-body">
+        <div class="tool-name">Project Viewer</div>
+        <div class="tool-desc">PMC & BD view — per-product progress, stage history, comments</div>
+        <div class="tool-meta">CRM · Read-only</div>
+      </div>
+      <span class="tool-arrow">→</span>
+    </a>
+
+    <a class="tool-card amber" href="https://hsartenspace.github.io/Production-Dashboard/entry.html" target="_blank">
+      <span class="tool-icon">✏️</span>
+      <div class="tool-body">
+        <div class="tool-name">Floor Entry</div>
+        <div class="tool-desc">Floor round + desk update modes — log department & observations</div>
+        <div class="tool-meta">CRM · Input</div>
+      </div>
+      <span class="tool-arrow">→</span>
+    </a>
+  </div>
+
+</div>
+</body>
+</html>
