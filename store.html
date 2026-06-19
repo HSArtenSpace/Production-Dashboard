@@ -17,7 +17,7 @@
   --purple:#a855f7;--purple-dim:rgba(168,85,247,0.13);
   --orange:#f05423;
   --teal:#14b8a6;--teal-dim:rgba(20,184,166,0.13);
-  --drawer-w:420px;
+  --drawer-w:460px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden}
@@ -72,6 +72,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .action-stat.half .action-stat-num{color:var(--purple)}
 .action-stat.over .action-stat-num{color:var(--amber)}
 .action-all-clear{color:var(--green);font-size:12px;font-family:'DM Mono',monospace;display:flex;align-items:center;gap:6px}
+
+/* ── Reorder list download CTA ── */
+.reorder-cta{width:100%;background:var(--orange);color:#fff;border:none;border-radius:8px;padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s}
+.reorder-cta:hover{background:#d8451c;transform:translateY(-1px)}
+.reorder-cta:disabled{background:var(--bg4);color:var(--text3);cursor:not-allowed;transform:none}
+.reorder-cta-count{background:rgba(255,255,255,.2);border-radius:999px;padding:1px 8px;font-size:11px;font-family:'DM Mono',monospace}
 
 /* ── Filter buttons (used inside drawer only) ── */
 .fbtn{font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 12px;border-radius:999px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;transition:all .15s}
@@ -225,7 +231,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
   </div>
 
   <!-- Center: Artenspace logo -->
-  <a href="index.html" style="display:flex;justify-content:center;text-decoration:none">
+  <a href="store.html" style="display:flex;justify-content:center;text-decoration:none">
     <svg style="height:22px;width:auto" viewBox="0 0 2260.8 629.4" xmlns="http://www.w3.org/2000/svg">
       <style>.st0{fill:#F05423;}</style>
       <g><g>
@@ -256,11 +262,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
   </div>
 </div>
 
-<!-- Page body: table is the full hero — no KPIs, no filters here -->
+<!-- Page body: table is the full hero — everything else lives in the drawer -->
 <div class="page-body">
-  <!-- Action Required — the first thing to look at, not the table -->
-  <div class="action-card" id="action-card" style="display:none"></div>
-
   <!-- Minimal status bar: just item count + active filter indicator -->
   <div class="status-bar" id="status-bar">
     <span id="status-count" style="color:var(--text3);font-family:'DM Mono',monospace;font-size:11px">Loading…</span>
@@ -313,6 +316,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 const API_URL    = 'https://script.google.com/macros/s/AKfycbz_suji7p0oLb7ds5IrljI0N13VAIe3UFbkxlq1zXdWFPprqYvLRNwC1kam45zKG7LA/exec';
 const STORE_API  = API_URL + '?type=store';
@@ -456,53 +460,71 @@ function renderKPIs(){
   const sc = document.getElementById('status-count');
   if(sc) sc.textContent = `${d.totalSKUs} SKUs · ${d.activeSKUs} active`;
   updateStatusFilter();
-  renderActionCard();
 }
 
-// ── Action Required card — the first thing management should see ──────────
-function renderActionCard(){
-  const el = document.getElementById('action-card');
-  if(!el || !storeData) return;
-  const d = storeData;
-  const negCount = d.negativeStockCount || 0;
-
-  const stats = [
-    {key:'critical',  cls:'crit',    count:negCount,                label:'negative stock'},
-    {key:'reorder',   cls:'reorder', count:d.needsReorderCount||0,  label:'need reorder'},
-    {key:'half',      cls:'half',    count:d.belowHalfCount||0,     label:'below 50% avg'},
-    {key:'overstock', cls:'over',    count:d.overstockedCount||0,   label:'overstocked'},
-  ];
-
-  const anyIssues = stats.some(s=>s.count>0);
-  el.style.display = 'flex';
-
-  if(!anyIssues){
-    el.innerHTML = `
-      <span class="action-title">📋 Action required</span>
-      <span class="action-all-clear">✓ All clear — no items need attention right now</span>`;
-    return;
-  }
-
-  const statsHtml = stats.map(s=>{
-    if(s.count===0) return `<div class="action-stat empty"><span class="action-stat-num">0</span><span class="action-stat-lbl">${s.label}</span></div>`;
-    return `<div class="action-stat ${s.cls}" onclick="applyActionFilter('${s.key}')">
-      <span class="action-stat-num">${s.count}</span><span class="action-stat-lbl">${s.label}</span>
-    </div>`;
-  }).join('');
-
-  el.innerHTML = `<span class="action-title">📋 Action required</span><div class="action-stats">${statsHtml}</div>`;
-}
-
-// Map Action Card stat keys to existing filter system
+// Map Action Card stat keys (used inside the drawer) to the existing filter system
 function applyActionFilter(key){
   const filterMap = {critical:'critical', reorder:'reorder', half:'half', overstock:'overstock'};
   const f = filterMap[key] || 'all';
   setFilter(f, null, '');
-  // Sync the drawer's filter buttons visually if drawer is open
+  // Sync the drawer's filter buttons visually
   const btnMap = {critical:null, reorder:'fbtn-reorder', half:'fbtn-half', overstock:'fbtn-overstock'};
   document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on','on-red','on-amber','on-green','on-teal'));
   const id = btnMap[key];
   if(id){ const b=document.getElementById(id); if(b) b.classList.add(key==='reorder'?'on-red':key==='overstock'?'on-amber':'on'); }
+}
+
+// ── Reorder list export — quantity depends on where we are in the monthly cycle ───
+// Window 1 (28th prev month → 12th this month): top up to 1 month running avg,
+//   accounting for safety stock already held: orderQty1 = RunningAvg − (Stock − SafetyStock)
+// Window 2 (13th → 27th): plan for this month + next month together:
+//   orderQty2 = (2 × RunningAvg) − CurrentStock
+// Both computed server-side in Code.gs so the export always matches what's shown live.
+function exportReorderList(){
+  if(!storeData || !storeData.items){ alert('Store data not loaded yet — please wait for sync.'); return; }
+  const todayDate  = new Date().getDate();
+  const inWindow1  = todayDate >= 28 || todayDate <= 12;
+  const orderField = inWindow1 ? 'orderQty1' : 'orderQty2';
+  const windowLabel = inWindow1
+    ? 'Window: 28th (prev month) to 12th (this month) — stock up to 1 month average'
+    : 'Window: 13th to 27th — stock up for this month + next month';
+
+  const rows = storeData.items
+    .filter(i => (i[orderField]||0) > 0)
+    .sort((a,b) => b[orderField] - a[orderField])
+    .map(i => ({
+      'Material Code':        i.code,
+      'Material Name':        i.name,
+      'Specification':        i.spec || '',
+      'UOM':                  i.uom,
+      'Current Stock':        Math.round(i.currentStock*100)/100,
+      'Running Avg / Month':  Math.round(i.runningAvgMonthly*100)/100,
+      'Safety Stock':         Math.round(i.safetyStock*100)/100,
+      'Order Quantity':       Math.round(i[orderField]*100)/100,
+      'Status':                i.isNegativeStock ? 'Negative Stock' : i.needsReorder ? 'Below Safety Stock' : 'Top Up',
+    }));
+
+  if(!rows.length){
+    alert('No items currently need reordering for this window.');
+    return;
+  }
+
+  const ws = XLSX.utils.json_to_sheet(rows);
+  ws['!cols'] = [{wch:10},{wch:32},{wch:18},{wch:8},{wch:12},{wch:16},{wch:12},{wch:14},{wch:16}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Reorder List');
+
+  // Add a small info sheet with the window + generation timestamp
+  const infoWs = XLSX.utils.aoa_to_sheet([
+    ['Artenspace — Material Reorder List'],
+    [windowLabel],
+    ['Generated', new Date().toLocaleString('en-IN')],
+    ['Total items', rows.length],
+  ]);
+  XLSX.utils.book_append_sheet(wb, infoWs, 'Info');
+
+  const dateStr = new Date().toISOString().substring(0,10);
+  XLSX.writeFile(wb, `Reorder_List_${dateStr}.xlsx`);
 }
 
 function updateStatusFilter(){
@@ -547,6 +569,11 @@ function toggleSection(key){
   const chev = document.getElementById('dc-'+key);
   if(body) body.style.display = secOpen[key] ? '' : 'none';
   if(chev) chev.textContent   = secOpen[key] ? '▾' : '▸';
+  // Daily consumption chart only has data once its canvas is visible —
+  // render it the moment this section opens, not just when the drawer first builds.
+  if(key === 'daily' && secOpen.daily){
+    setTimeout(renderDailyChart, 30);
+  }
 }
 
 function renderDrawer(){
@@ -611,7 +638,48 @@ function renderDrawer(){
     ? `<div class="chart-wrap" style="height:180px"><canvas id="daily-chart"></canvas></div>`
     : '<div style="padding:24px;text-align:center;color:var(--text3);font-family:DM Mono,monospace;font-size:11px">No consumption recorded this month yet</div>';
 
+  // Action Required stats — same data as before, now lives in the drawer only
+  const negCount = d.negativeStockCount || 0;
+  const actionStats = [
+    {key:'critical',  cls:'crit',    count:negCount,                label:'negative stock'},
+    {key:'reorder',   cls:'reorder', count:d.needsReorderCount||0,  label:'need reorder'},
+    {key:'half',      cls:'half',    count:d.belowHalfCount||0,     label:'below 50% avg'},
+    {key:'overstock', cls:'over',    count:d.overstockedCount||0,   label:'overstocked'},
+  ];
+  const anyIssues = actionStats.some(s=>s.count>0);
+  const actionHtml = !anyIssues
+    ? `<span class="action-all-clear">✓ All clear — no items need attention right now</span>`
+    : actionStats.map(s=>{
+        if(s.count===0) return `<div class="action-stat empty"><span class="action-stat-num">0</span><span class="action-stat-lbl">${s.label}</span></div>`;
+        return `<div class="action-stat ${s.cls}" onclick="applyActionFilter('${s.key}');closeDrawer()">
+          <span class="action-stat-num">${s.count}</span><span class="action-stat-lbl">${s.label}</span>
+        </div>`;
+      }).join('');
+
+  // ── Reorder window — which cycle are we in today? ──────────────────────
+  const todayDate = new Date().getDate();
+  const inWindow1 = todayDate >= 28 || todayDate <= 12;   // 28th (prev mo) → 12th (this mo)
+  const windowLabel = inWindow1
+    ? 'Stock up to 1 month avg (28th–12th window)'
+    : 'Stock for this + next month (13th–27th window)';
+  const orderField = inWindow1 ? 'orderQty1' : 'orderQty2';
+  const orderCount = (d.items||[]).filter(i => (i[orderField]||0) > 0).length;
+
   document.getElementById('drawer-body').innerHTML = `
+    <!-- Action Required — always visible, not collapsible, first thing in the drawer -->
+    <div class="d-section" style="border-bottom:2px solid var(--border2)">
+      <div class="d-sec-head" style="cursor:default">
+        <span class="d-sec-title">📋 Action required</span>
+      </div>
+      <div class="d-sec-body" style="display:flex;flex-wrap:wrap;gap:8px;padding:4px 14px 14px">${actionHtml}</div>
+      <div style="padding:0 14px 14px">
+        <button class="reorder-cta" onclick="exportReorderList()">
+          ⬇ Download reorder list <span class="reorder-cta-count">${orderCount} items</span>
+        </button>
+        <div style="font-size:9.5px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:6px;text-align:center">${windowLabel}</div>
+      </div>
+    </div>
+
     <!-- KPI section -->
     <div class="d-section">
       <div class="d-sec-head" onclick="toggleSection('kpis')">
@@ -708,7 +776,9 @@ function renderDrawer(){
 
 function renderDailyChart(){
   const canvas = document.getElementById('daily-chart');
-  if(!canvas||!storeData.dailyOut) return;
+  if(!canvas||!storeData||!storeData.dailyOut) return;
+  // Guard against calling this before the canvas has actual layout (display:none parent)
+  if(canvas.offsetParent === null){ setTimeout(renderDailyChart, 60); return; }
   if(dailyChart){ dailyChart.destroy(); dailyChart=null; }
   const entries = Object.entries(storeData.dailyOut).sort((a,b)=>a[0].localeCompare(b[0]));
   if(!entries.length) return;
