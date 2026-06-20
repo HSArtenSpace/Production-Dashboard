@@ -183,6 +183,35 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .err-box{padding:2rem;text-align:center;background:var(--bg2);border:1px solid rgba(239,68,68,.2);border-radius:12px}
 .err-title{color:var(--red);font-size:14px;font-weight:500;margin-bottom:8px}
 .err-msg{font-size:12px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:8px}
+
+/* ── Drawer ── */
+--drawer-w:400px;
+.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;opacity:0;pointer-events:none;transition:opacity .25s}
+.drawer-overlay.open{opacity:1;pointer-events:all}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:400px;background:var(--bg2);border-left:1px solid var(--border2);z-index:101;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;overflow:hidden}
+.drawer.open{transform:translateX(0)}
+.drawer-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
+.drawer-title{font-size:12px;font-weight:500;font-family:'DM Mono',monospace;color:var(--text2);text-transform:uppercase;letter-spacing:.05em}
+.drawer-close{background:none;border:1px solid var(--border);color:var(--text3);width:26px;height:26px;border-radius:6px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.drawer-close:hover{background:var(--bg3);color:var(--text)}
+.drawer-body{flex:1;overflow-y:auto}
+.d-section{border-bottom:1px solid var(--border)}
+.d-sec-head{padding:10px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+.d-sec-head:hover{background:rgba(255,255,255,.02)}
+.d-sec-title{font-size:12px;font-weight:500;font-family:'DM Mono',monospace;color:var(--text2)}
+.d-sec-meta{font-size:11px;color:var(--text3);display:flex;align-items:center;gap:6px;font-family:'DM Mono',monospace}
+.d-sec-body{padding:8px 14px 14px}
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kpi-tile{background:var(--bg3);border-radius:8px;padding:9px 10px}
+.kpi-label{font-size:9.5px;color:var(--text3);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.kpi-val{font-size:20px;font-weight:500;line-height:1.1}
+.kpi-sub{font-size:9.5px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:2px}
+.btn-panel{font-family:'DM Sans',sans-serif;font-size:12px;padding:7px 13px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn-panel:hover{background:var(--bg4);color:var(--text)}
+.btn-panel.active{border-color:var(--orange);color:var(--orange)}
+/* sort inside drawer */
+.drawer-sort{width:100%;font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 10px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);outline:none}
+
 </style>
 </head>
 <body>
@@ -191,9 +220,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   <!-- ── Single-line header ── -->
   <div class="header">
 
-    <!-- LEFT: Store Intelligence nav -->
+    <!-- LEFT: Filter drawer -->
     <div class="header-left">
-      <a class="btn" href="store.html" style="text-decoration:none;display:flex;align-items:center;gap:6px;color:var(--orange);border-color:rgba(240,84,35,.3)">Store Intelligence</a>
+      <button class="btn-panel" id="filter-drawer-btn" onclick="toggleFilterDrawer()">&#9881; Filters</button>
     </div>
 
     <!-- CENTRE: logo + sync -->
@@ -202,6 +231,35 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 <svg class="brand-logo" viewBox="0 0 2260.8 629.4" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
 <style type="text/css">
 	.st0{fill:#F05423;}
+
+/* ── Drawer ── */
+--drawer-w:400px;
+.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;opacity:0;pointer-events:none;transition:opacity .25s}
+.drawer-overlay.open{opacity:1;pointer-events:all}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:400px;background:var(--bg2);border-left:1px solid var(--border2);z-index:101;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;overflow:hidden}
+.drawer.open{transform:translateX(0)}
+.drawer-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
+.drawer-title{font-size:12px;font-weight:500;font-family:'DM Mono',monospace;color:var(--text2);text-transform:uppercase;letter-spacing:.05em}
+.drawer-close{background:none;border:1px solid var(--border);color:var(--text3);width:26px;height:26px;border-radius:6px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.drawer-close:hover{background:var(--bg3);color:var(--text)}
+.drawer-body{flex:1;overflow-y:auto}
+.d-section{border-bottom:1px solid var(--border)}
+.d-sec-head{padding:10px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+.d-sec-head:hover{background:rgba(255,255,255,.02)}
+.d-sec-title{font-size:12px;font-weight:500;font-family:'DM Mono',monospace;color:var(--text2)}
+.d-sec-meta{font-size:11px;color:var(--text3);display:flex;align-items:center;gap:6px;font-family:'DM Mono',monospace}
+.d-sec-body{padding:8px 14px 14px}
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kpi-tile{background:var(--bg3);border-radius:8px;padding:9px 10px}
+.kpi-label{font-size:9.5px;color:var(--text3);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.kpi-val{font-size:20px;font-weight:500;line-height:1.1}
+.kpi-sub{font-size:9.5px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:2px}
+.btn-panel{font-family:'DM Sans',sans-serif;font-size:12px;padding:7px 13px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn-panel:hover{background:var(--bg4);color:var(--text)}
+.btn-panel.active{border-color:var(--orange);color:var(--orange)}
+/* sort inside drawer */
+.drawer-sort{width:100%;font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 10px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);outline:none}
+
 </style>
 <g>
 	<g>
@@ -256,32 +314,25 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
           <input class="search" type="text" placeholder="Search project / code…" id="search-box" oninput="applyFilters()">
         </div>
       </div>
+      <button class="btn-panel" id="drawer-toggle-btn" onclick="toggleDrawer()">&#9776; Summary panels</button>
       <button class="btn" onclick="manualRefresh()">&#8635; Refresh</button>
     </div>
   </div>
 
+  <div id="stats-row" style="display:none"></div>
+  <div style="display:none" aria-hidden="true">
+    <button class="fbtn on" id="fbtn-all"         onclick="setFilter('all',this,'on')">All live</button>
+    <button class="fbtn"    id="fbtn-not-started"  onclick="setFilter('not_started',this,'on-purple')">Not started</button>
+    <button class="fbtn"    id="fbtn-wip"          onclick="setFilter('wip',this,'on')">WIP</button>
+    <button class="fbtn"    id="fbtn-hold"         onclick="setFilter('hold',this,'on-amber')">On hold</button>
+    <button class="fbtn"    id="fbtn-completed"    onclick="setFilter('completed',this,'on-green')">Completed</button>
+    <button class="fbtn"    id="fbtn-activity"     onclick="setFilter('activity',this,'on')">Activity</button>
+    <button class="fbtn"    id="fbtn-dept"         onclick="showDeptSelector(this)">By Department</button>
+  </div>
+  <select id="sort-select" style="display:none" onchange="changeSort(this.value)"><option value="latestActivity">Latest Activity</option><option value="oldestActivity">Oldest Activity</option><option value="highestProgress">Highest Progress</option><option value="lowestProgress">Lowest Progress</option><option value="newestProject">Newest Project</option><option value="oldestProject">Oldest Project</option></select>
   <!-- ── Dashboard view ── -->
   <div class="dashboard-view" id="dashboard-view">
-    <div class="stats" id="stats-row"></div>
-    <div class="filter-row">
-      <button class="fbtn on" id="fbtn-all"         onclick="setFilter('all',this,'on')">All live</button>
-      <button class="fbtn"    id="fbtn-not-started"  onclick="setFilter('not_started',this,'on-purple')">Not started</button>
-      <button class="fbtn"    id="fbtn-wip"          onclick="setFilter('wip',this,'on')">WIP</button>
-      <button class="fbtn"    id="fbtn-hold"         onclick="setFilter('hold',this,'on-amber')">On hold</button>
-      <button class="fbtn"    id="fbtn-completed"    onclick="setFilter('completed',this,'on-green')">Completed</button>
-      <button class="fbtn"    id="fbtn-activity"     onclick="setFilter('activity',this,'on')">&#9679; Activity</button>
-      <button class="fbtn"    id="fbtn-dept"         onclick="showDeptSelector(this)">&#127981; By Department</button>
-      <div class="sort-wrap">
-        <select class="sort-select" id="sort-select" onchange="changeSort(this.value)">
-          <option value="latestActivity">Latest Activity</option>
-          <option value="oldestActivity">Oldest Activity</option>
-          <option value="highestProgress">Highest Progress</option>
-          <option value="lowestProgress">Lowest Progress</option>
-          <option value="newestProject">Newest Project</option>
-          <option value="oldestProject">Oldest Project</option>
-        </select>
-      </div>
-    </div>
+
     <div id="main-area"></div>
   </div>
 
@@ -289,6 +340,32 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   <div class="proj-page" id="proj-page">
     <div id="proj-page-content"></div>
   </div>
+
+
+
+<!-- Left filter drawer overlay -->
+<div class="drawer-overlay" id="filter-drawer-overlay" onclick="closeFilterDrawer()"></div>
+<!-- Left filter drawer -->
+<div class="drawer" id="filter-drawer" style="left:0;right:auto;border-left:none;border-right:1px solid var(--border2);transform:translateX(-100%)">
+  <div class="drawer-header">
+    <span class="drawer-title">Filters</span>
+    <button class="drawer-close" onclick="closeFilterDrawer()">✕</button>
+  </div>
+  <div class="drawer-body" id="filter-drawer-body"></div>
+</div>
+
+<!-- Drawer overlay -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+<!-- Right drawer -->
+<div class="drawer" id="drawer">
+  <div class="drawer-header">
+    <span class="drawer-title">Summary Panels</span>
+    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="drawer-body" id="drawer-body">
+    <div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">Loading...</div>
+  </div>
+</div>
 
 </div>
 <script>
@@ -692,15 +769,8 @@ function updateTabTitle(){
 }
 
 function renderStats(){
-  const all=allProjects;
-  document.getElementById('stats-row').innerHTML=[
-    {label:'Not started',   val:all.filter(p=>p.status==='not_started').length,                           cls:'c-purple'},
-    {label:'Live projects', val:all.filter(p=>p.status!=='completed'&&p.status!=='not_started').length,   cls:'c-blue'},
-    {label:'WIP',           val:all.filter(p=>p.status==='wip').length,                                   cls:'c-blue'},
-    {label:'On hold',       val:all.filter(p=>p.status==='hold').length,                                  cls:'c-amber'},
-    {label:'Completed',     val:all.filter(p=>p.status==='completed').length,                             cls:'c-green'},
-    {label:'Total products',val:all.reduce((s,p)=>s+p.products.length,0),                                cls:''},
-  ].map(s=>`<div class="stat"><div class="stat-label">${s.label}</div><div class="stat-val ${s.cls}">${s.val}</div></div>`).join('');
+  // Stats now live in the drawer — refresh drawer if open
+  if(drawerOpen) renderDrawer();
 }
 
 function toggleCard(id){
@@ -936,6 +1006,215 @@ function handleHash(){
 }
 
 window.addEventListener('hashchange', handleHash);
+
+
+
+// ── Filter Drawer (left) ─────────────────────────────────
+let filterDrawerOpen = false;
+let fSecOpen = { status: true, sort: false, dept: false };
+
+function toggleFilterDrawer(){ filterDrawerOpen ? closeFilterDrawer() : openFilterDrawer(); }
+
+function openFilterDrawer(){
+  filterDrawerOpen = true;
+  document.getElementById('filter-drawer').style.transform = 'translateX(0)';
+  document.getElementById('filter-drawer-overlay').classList.add('open');
+  document.getElementById('filter-drawer-btn').classList.add('active');
+  renderFilterDrawer();
+}
+
+function closeFilterDrawer(){
+  filterDrawerOpen = false;
+  document.getElementById('filter-drawer').style.transform = 'translateX(-100%)';
+  document.getElementById('filter-drawer-overlay').classList.remove('open');
+  document.getElementById('filter-drawer-btn').classList.remove('active');
+}
+
+function toggleFSec(id){
+  fSecOpen[id] = !fSecOpen[id];
+  renderFilterDrawer();
+}
+
+function renderFilterDrawer(){
+  const curSort = document.getElementById('sort-select') ? document.getElementById('sort-select').value : 'latestActivity';
+  const curFilter = activeFilter || 'all';
+
+  // Get dept list from live projects
+  const deptMap = {};
+  allProjects.forEach(proj => {
+    if(proj.status==='completed'||proj.status==='not_started') return;
+    proj.products.forEach(p => {
+      if(!p.currentDept||p.isDispatched) return;
+      if(!deptMap[p.currentDept]) deptMap[p.currentDept]=0;
+      deptMap[p.currentDept]++;
+    });
+  });
+  const depts = Object.entries(deptMap).sort((a,b)=>b[1]-a[1]);
+
+  const statusItems = [
+    {id:'fbtn-all',         val:'all',         label:'All live',     cls:'on'},
+    {id:'fbtn-not-started', val:'not_started',  label:'Not started',  cls:'on-purple'},
+    {id:'fbtn-wip',         val:'wip',          label:'WIP',          cls:'on'},
+    {id:'fbtn-hold',        val:'hold',         label:'On hold',      cls:'on-amber'},
+    {id:'fbtn-completed',   val:'completed',    label:'Completed',    cls:'on-green'},
+    {id:'fbtn-activity',    val:'activity',     label:'● Activity',   cls:'on'},
+  ];
+
+  document.getElementById('filter-drawer-body').innerHTML = `
+
+    <!-- Status filter -->
+    <div class="d-section">
+      <div class="d-sec-head" onclick="toggleFSec('status')">
+        <span class="d-sec-title">Status Filter</span>
+        <span class="d-sec-meta"><span style="color:var(--blue)">${curFilter.replace('_',' ')}</span><span>${fSecOpen.status?'▾':'▸'}</span></span>
+      </div>
+      <div class="d-sec-body" style="display:${fSecOpen.status?'block':'none'}">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          ${statusItems.map(s=>`
+            <button onclick="setFilter('${s.val}',{classList:{add:()=>{},remove:()=>{}}},'${s.cls}');syncFilterBtns();renderFilterDrawer();"
+              style="font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 12px;border-radius:8px;border:1px solid ${curFilter===s.val?'var(--blue)':'var(--border)'};background:${curFilter===s.val?'var(--blue-dim)':'var(--bg3)'};color:${curFilter===s.val?'var(--blue)':'var(--text2)'};cursor:pointer;text-align:left;transition:all .12s">
+              ${s.label}
+            </button>`).join('')}
+        </div>
+      </div>
+    </div>
+
+    <!-- By Department -->
+    <div class="d-section">
+      <div class="d-sec-head" onclick="toggleFSec('dept')">
+        <span class="d-sec-title">By Department</span>
+        <span class="d-sec-meta"><span>${depts.length} active</span><span>${fSecOpen.dept?'▾':'▸'}</span></span>
+      </div>
+      <div class="d-sec-body" style="display:${fSecOpen.dept?'block':'none'}">
+        ${depts.length===0 ? '<div style="font-size:12px;color:var(--text3)">No active departments</div>' :
+          `<div style="display:flex;flex-direction:column;gap:6px">
+            ${depts.map(([dept,count])=>`
+              <button onclick="setDeptFilterFromDrawer('${dept.replace(/'/g,"\'")}');renderFilterDrawer();"
+                style="font-family:'DM Sans',sans-serif;font-size:12px;padding:7px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;text-align:left;display:flex;justify-content:space-between;align-items:center;transition:background .12s"
+                onmouseover="this.style.background='var(--bg4)'" onmouseout="this.style.background='var(--bg3)'">
+                <span>${dept}</span>
+                <span style="font-size:10px;font-family:DM Mono,monospace;color:var(--text3);background:var(--bg4);padding:2px 7px;border-radius:999px">${count}</span>
+              </button>`).join('')}
+          </div>`
+        }
+      </div>
+    </div>
+
+    <!-- Sort -->
+    <div class="d-section">
+      <div class="d-sec-head" onclick="toggleFSec('sort')">
+        <span class="d-sec-title">Sort By</span>
+        <span class="d-sec-meta"><span>${curSort.replace(/([A-Z])/g,' $1').toLowerCase().trim()}</span><span>${fSecOpen.sort?'▾':'▸'}</span></span>
+      </div>
+      <div class="d-sec-body" style="display:${fSecOpen.sort?'block':'none'}">
+        <select class="drawer-sort" onchange="changeSort(this.value);renderFilterDrawer();if(drawerOpen)renderDrawer();">
+          <option value="latestActivity"  ${curSort==='latestActivity' ?'selected':''}>Latest Activity</option>
+          <option value="oldestActivity"  ${curSort==='oldestActivity' ?'selected':''}>Oldest Activity</option>
+          <option value="highestProgress" ${curSort==='highestProgress'?'selected':''}>Highest Progress</option>
+          <option value="lowestProgress"  ${curSort==='lowestProgress' ?'selected':''}>Lowest Progress</option>
+          <option value="newestProject"   ${curSort==='newestProject'  ?'selected':''}>Newest Project</option>
+          <option value="oldestProject"   ${curSort==='oldestProject'  ?'selected':''}>Oldest Project</option>
+        </select>
+      </div>
+    </div>
+  `;
+}
+
+function setDeptFilterFromDrawer(dept){
+  // Use existing showDeptSelector logic — directly set deptFilter and apply
+  deptFilter = dept;
+  activeFilter = 'dept';
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on','on-amber','on-green','on-purple'));
+  applyFilters();
+  closeFilterDrawer();
+}
+
+function syncFilterBtns(){
+  // Keep hidden fbtn elements in sync so existing setFilter logic still works
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on','on-amber','on-green','on-purple'));
+}
+
+// ── Drawer ──────────────────────────────────────────────
+let drawerOpen = false;
+let dSecOpen = { overview: false, sort: false };
+
+function toggleDrawer(){ drawerOpen ? closeDrawer() : openDrawer(); }
+function openDrawer(){
+  drawerOpen = true;
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('drawer-overlay').classList.add('open');
+  document.getElementById('drawer-toggle-btn').classList.add('active');
+  renderDrawer();
+}
+function closeDrawer(){
+  drawerOpen = false;
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawer-overlay').classList.remove('open');
+  document.getElementById('drawer-toggle-btn').classList.remove('active');
+}
+function toggleDSec(id){
+  dSecOpen[id] = !dSecOpen[id];
+  renderDrawer();
+}
+
+function renderDrawer(){
+  const all = allProjects;
+  const ns   = all.filter(p=>p.status==='not_started').length;
+  const live = all.filter(p=>p.status!=='completed'&&p.status!=='not_started').length;
+  const wip  = all.filter(p=>p.status==='wip').length;
+  const hold = all.filter(p=>p.status==='hold').length;
+  const done = all.filter(p=>p.status==='completed').length;
+  const prods = all.reduce((s,p)=>s+p.products.length,0);
+  const atRisk = all.filter(p=>{ const dl=getDeadlineInfo(p); return dl&&dl.isAtRisk; }).length;
+
+  const curSort = document.getElementById('sort-select') ? document.getElementById('sort-select').value : 'latestActivity';
+
+  document.getElementById('drawer-body').innerHTML = `
+    <!-- Overview -->
+    <div class="d-section">
+      <div class="d-sec-head" onclick="toggleDSec('overview')">
+        <span class="d-sec-title">Production Overview</span>
+        <span class="d-sec-meta"><span>${all.length} projects</span><span>${dSecOpen.overview?'▾':'▸'}</span></span>
+      </div>
+      <div class="d-sec-body" style="display:${dSecOpen.overview?'block':'none'}">
+        <div class="kpi-grid">
+          ${[
+            {label:'Not Started',   val:ns,    cls:'c-purple', sub:'awaiting production'},
+            {label:'Live Projects', val:live,  cls:'c-blue',   sub:'wip + on hold'},
+            {label:'WIP',           val:wip,   cls:'c-blue',   sub:'active this week'},
+            {label:'On Hold',       val:hold,  cls:'c-amber',  sub:'no recent activity'},
+            {label:'Completed',     val:done,  cls:'c-green',  sub:'dispatched'},
+            {label:'At Risk',       val:atRisk,cls:'c-red',    sub:'deadline at risk'},
+            {label:'Total Projects',val:all.length,cls:'',     sub:'all time'},
+            {label:'Total Products',val:prods, cls:'',         sub:'across all projects'},
+          ].map(k=>`<div class="kpi-tile">
+            <div class="kpi-label">${k.label}</div>
+            <div class="kpi-val ${k.cls}">${k.val}</div>
+            <div class="kpi-sub">${k.sub}</div>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>
+
+    <!-- Sort -->
+    <div class="d-section">
+      <div class="d-sec-head" onclick="toggleDSec('sort')">
+        <span class="d-sec-title">Sort Order</span>
+        <span class="d-sec-meta"><span>${curSort.replace(/([A-Z])/g,' $1').toLowerCase()}</span><span>${dSecOpen.sort?'▾':'▸'}</span></span>
+      </div>
+      <div class="d-sec-body" style="display:${dSecOpen.sort?'block':'none'}">
+        <select class="drawer-sort" onchange="changeSort(this.value);renderDrawer()">
+          <option value="latestActivity"  ${curSort==='latestActivity' ?'selected':''}>Latest Activity</option>
+          <option value="oldestActivity"  ${curSort==='oldestActivity' ?'selected':''}>Oldest Activity</option>
+          <option value="highestProgress" ${curSort==='highestProgress'?'selected':''}>Highest Progress</option>
+          <option value="lowestProgress"  ${curSort==='lowestProgress' ?'selected':''}>Lowest Progress</option>
+          <option value="newestProject"   ${curSort==='newestProject'  ?'selected':''}>Newest Project</option>
+          <option value="oldestProject"   ${curSort==='oldestProject'  ?'selected':''}>Oldest Project</option>
+        </select>
+      </div>
+    </div>
+  `;
+}
 
 // Init
 loadData(false);
