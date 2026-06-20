@@ -148,8 +148,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 <!-- Page header -->
 <div class="page-header">
   <div class="header-left">
-    <a class="nav-btn" href="owner.html">⌂ Home</a>
-    <a class="nav-btn" href="entry.html">✏️ Entry</a>
+    <a class="nav-btn" href="https://hsartenspace.github.io/Production-Dashboard/owner.html">⌂ Home</a>
+    <a class="nav-btn" href="https://hsartenspace.github.io/Production-Dashboard/entry.html">✏️ Entry</a>
   </div>
 
   <a class="brand-link" onclick="location.reload()" href="#">
@@ -213,8 +213,8 @@ const REFRESH_MS = 120000;
 let allProjects=[], pmcNames=[], bdNames=[];
 let activePill='all', expandedId=null, expandedHist={};
 let drawerOpen=false;
-let secOpen={overview:true, filters:false};
-let filterPmc='', filterBd='';
+let secOpen={overview:false, filters:false, dept:false};
+let filterPmc='', filterBd='', filterDept='';
 
 const ARTNSVG = `<svg class="brand-logo" viewBox="0 0 2260.8 629.4" xmlns="http://www.w3.org/2000/svg"><style>.st0{fill:#F05423;}</style><g><g><path class="st0" d="M1329.1,402.7c126.7,0,253.5,0,381.1,0c0-21,0-41.9,0-63.9c-102.3,0-204.3,0-307,0c0-20.5,0-39.8,0-60.3c79.1,0,158.2,0,237.8,0c0-22,0-42.9,0-64.9c-79.4,0-158.5,0-237.9,0c0-20.4,0-39.8,0-60.2c102.6,0,204.6,0,307.2,0c0-21.9,0-42.9,0-64.8c-127.5,0-253.9,0-381.2,0C1329.1,193.3,1329.1,297.6,1329.1,402.7z"/><path class="st0" d="M903.9,88.5v65.3c51.5-0.2,103.1-0.1,154.5-0.1c2.1,0,4.2,0.3,7.3,0.5v248.9h0.1h73.5h0.1V154.2c3.1-0.2,5.2-0.5,7.3-0.5c51.5,0,103.1-0.1,154.5,0.1V88.5c-66.3-0.3-132.5,0-198.8,0.1C1036.4,88.5,970.2,88.2,903.9,88.5z"/><path class="st0" d="M208.2,88.4L94.1,402.7h78.8l101.6-280c4.2-11.6,20.6-11.6,24.8,0l101.6,280h78.8L365.7,88.4H208.2z"/><path class="st0" d="M685.8,277.1h105.4c52.1,0,94.4-42.3,94.4-94.4s-42.3-94.4-94.4-94.4H506v314.3h74V152.9h201.9c16.4,0,29.8,13.3,29.8,29.8c0,16.4-13.3,29.8-29.8,29.8H680.4c-39,0-70.5,31.6-70.5,70.5c0,32.6,22.3,60.9,54,68.6l194.4,50.4l15.2-62.8l-189.1-49.1C676.7,288.2,678,277.1,685.8,277.1z"/><path class="st0" d="M2092.7,88.3l0.1,280c-4.2,11.6-20.6,11.6-24.8,0l-55.9-95.3L1903.7,88.3h-0.1h-78.6h-0.1h-0.1h-78.6v314.3h74l-0.1-280c4.2-11.6,20.6-11.6,24.8,0l54.3,92.5l109.9,187.5h0.1h78.6h0.1h0.1h78.6V88.3H2092.7z"/></g></g></svg>`;
 
@@ -256,8 +256,9 @@ function setPill(s,el,cls){
 function applyFilters(){
   const q=(document.getElementById('search-box').value||'').toLowerCase().trim();
   let list=allProjects;
-  if(filterPmc) list=list.filter(p=>p.pmc===filterPmc);
-  if(filterBd)  list=list.filter(p=>p.bd===filterBd);
+  if(filterPmc)  list=list.filter(p=>p.pmc===filterPmc);
+  if(filterBd)   list=list.filter(p=>p.bd===filterBd);
+  if(filterDept) list=list.filter(p=>(p.products||[]).some(pr=>pr.currentDept===filterDept));
   if(q) list=list.filter(p=>(p.name||'').toLowerCase().includes(q)||(p.code||'').toLowerCase().includes(q));
   if(activePill!=='all') list=list.filter(p=>p.status===activePill);
   document.getElementById('result-meta').textContent=list.length+' project'+(list.length!==1?'s':'');
@@ -400,15 +401,22 @@ function renderDrawer(){
   const pmcOpts=pmcNames.filter(n=>n&&n!=='#N/A'&&n!=='-').map(n=>`<option value="${n}"${filterPmc===n?' selected':''}>${n}</option>`).join('');
   const bdOpts=bdNames.filter(n=>n&&n!=='#N/A'&&n!=='-').map(n=>`<option value="${n}"${filterBd===n?' selected':''}>${n}</option>`).join('');
 
+  // Build dept list from live data
+  const deptSet=new Set();
+  allProjects.forEach(p=>(p.products||[]).forEach(pr=>{ if(pr.currentDept) deptSet.add(pr.currentDept); }));
+  const depts=[...deptSet].sort();
+  const deptOpts=depts.map(d=>`<option value="${d}"${filterDept===d?' selected':''}>${d}</option>`).join('');
+  const anyFilter=filterPmc||filterBd||filterDept;
+
   document.getElementById('drawer-body').innerHTML=`
 
     <!-- Overview KPIs -->
     <div class="d-section">
       <div class="d-sec-head" onclick="toggleSection('overview')">
         <span class="d-sec-title">Production Overview</span>
-        <span class="d-sec-meta"><span>${total} projects</span><span id="dc-ov">${secOpen.overview?'▾':'▸'}</span></span>
+        <span class="d-sec-meta"><span>${total} projects</span><span>${secOpen.overview?'▾':'▸'}</span></span>
       </div>
-      <div class="d-sec-body" id="ds-ov" style="display:${secOpen.overview?'block':'none'}">
+      <div class="d-sec-body" style="display:${secOpen.overview?'block':'none'}">
         <div class="kpi-grid">
           ${[
             {label:'WIP',         val:wip,       cls:'color:var(--blue)',   sub:'active projects'},
@@ -427,11 +435,11 @@ function renderDrawer(){
       </div>
     </div>
 
-    <!-- Filters -->
+    <!-- Filter by PMC / BD -->
     <div class="d-section">
       <div class="d-sec-head" onclick="toggleSection('filters')">
         <span class="d-sec-title">Filter by PMC / BD</span>
-        <span class="d-sec-meta"><span>${filterPmc||filterBd?'active':'all'}</span><span>${secOpen.filters?'▾':'▸'}</span></span>
+        <span class="d-sec-meta"><span style="${filterPmc||filterBd?'color:var(--orange)':''}">${filterPmc||filterBd?'active':'all'}</span><span>${secOpen.filters?'▾':'▸'}</span></span>
       </div>
       <div class="d-sec-body" style="display:${secOpen.filters?'block':'none'}">
         <div class="filter-group">
@@ -446,15 +454,38 @@ function renderDrawer(){
             <option value="">All BDs</option>${bdOpts}
           </select>
         </div>
-        ${filterPmc||filterBd?`<button onclick="clearFilters()" style="font-size:11px;color:var(--red);background:var(--red-dim);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:6px 12px;cursor:pointer;font-family:DM Mono,monospace;width:100%">✕ Clear filters</button>`:''}
+        ${filterPmc||filterBd?`<button onclick="setFilterPmc('');setFilterBd('');" style="font-size:11px;color:var(--red);background:var(--red-dim);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:6px 12px;cursor:pointer;font-family:DM Mono,monospace;width:100%">✕ Clear PMC / BD</button>`:''}
       </div>
     </div>
+
+    <!-- Filter by Department -->
+    <div class="d-section">
+      <div class="d-sec-head" onclick="toggleSection('dept')">
+        <span class="d-sec-title">Filter by Department</span>
+        <span class="d-sec-meta"><span style="${filterDept?'color:var(--orange)':''}">${filterDept||'all'}</span><span>${secOpen.dept?'▾':'▸'}</span></span>
+      </div>
+      <div class="d-sec-body" style="display:${secOpen.dept?'block':'none'}">
+        <div class="filter-group">
+          <div class="filter-label">Current Department</div>
+          <select class="filter-select" onchange="setFilterDept(this.value)">
+            <option value="">All Departments</option>${deptOpts}
+          </select>
+        </div>
+        <div style="font-size:10px;color:var(--text3);font-family:DM Mono,monospace;margin-top:-4px;margin-bottom:6px">Shows projects with at least one product in this dept</div>
+        ${filterDept?`<button onclick="setFilterDept('')" style="font-size:11px;color:var(--red);background:var(--red-dim);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:6px 12px;cursor:pointer;font-family:DM Mono,monospace;width:100%">✕ Clear dept filter</button>`:''}
+      </div>
+    </div>
+
+    ${anyFilter?`<div style="padding:12px 14px;border-top:1px solid var(--border)">
+      <button onclick="clearFilters()" style="font-size:11px;color:var(--red);background:var(--red-dim);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:8px 12px;cursor:pointer;font-family:DM Mono,monospace;width:100%;font-weight:500">✕ Clear all filters</button>
+    </div>`:''}
   `;
 }
 
 function setFilterPmc(v){ filterPmc=v; applyFilters(); renderDrawer(); }
 function setFilterBd(v){  filterBd=v;  applyFilters(); renderDrawer(); }
-function clearFilters(){ filterPmc=''; filterBd=''; applyFilters(); renderDrawer(); }
+function setFilterDept(v){ filterDept=v; applyFilters(); renderDrawer(); }
+function clearFilters(){ filterPmc=''; filterBd=''; filterDept=''; applyFilters(); renderDrawer(); }
 
 loadData();
 setInterval(loadData, REFRESH_MS);
