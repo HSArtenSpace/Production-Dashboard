@@ -381,7 +381,7 @@ async function loadDigestData() {
   if (!digestDate) return;
   setDot('syncing');
   try {
-    const res  = await fetch(API + '?type=viewer&date=' + digestDate + '&t=' + Date.now());
+    const res  = await fetch(API + '?type=viewer_all&date=' + digestDate + '&t=' + Date.now());
     const data = await res.json();
     if (data.error) throw new Error(data.error);
     digestProjects = data.projects || [];
