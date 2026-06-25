@@ -163,7 +163,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 /* ── Digest card ── */
 .digest-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:border-color .15s}
 .digest-card:hover{border-color:var(--border2)}
-.dc-header{padding:14px 16px 10px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.dc-header{padding:14px 16px 10px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;gap:10px;cursor:pointer;user-select:none}
+.dc-header:hover{background:rgba(255,255,255,.02)}
+.dc-chevron{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;margin-right:2px;display:inline-block;width:10px}
 .dc-proj-name{font-size:14px;font-weight:600;line-height:1.3}
 .dc-proj-meta{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:2px}
 .dc-badges{display:flex;gap:6px;align-items:center;flex-shrink:0}
@@ -229,7 +231,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
         </div>
         <span class="digest-meta" id="digest-meta"></span>
       </div>
-      <button class="copy-all-btn" id="copy-all-btn" onclick="copyAll()">⎘ Copy all messages</button>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="copy-all-btn" id="expand-all-btn" style="border-color:var(--border2);background:var(--bg3);color:var(--text2)" onclick="toggleExpandAll()">⊞ Expand all</button>
+        <button class="copy-all-btn" id="copy-all-btn" onclick="copyAll()">⎘ Copy all messages</button>
+      </div>
     </div>
   </div>
 
@@ -280,6 +285,8 @@ const ARTNSVG = `<svg class="brand-logo" viewBox="0 0 2260.8 629.4" xmlns="http:
 // ══════════════════════════════════════════════════════════
 let currentView = 'progress';
 let digestProjects = [];
+let digestExpanded = {};
+let digestAllExpanded = false;
 let digestDate = '';
 
 function setView(v) {
@@ -309,6 +316,10 @@ async function loadDigestData() {
     const data = await res.json();
     if (data.error) throw new Error(data.error);
     digestProjects = data.projects || [];
+    digestExpanded = {};
+    digestAllExpanded = false;
+    const expandBtn = document.getElementById('expand-all-btn');
+    if (expandBtn) expandBtn.textContent = '⊞ Expand all';
     setDot('ok');
     const fmt = new Date(digestDate + 'T12:00:00').toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'});
     document.getElementById('digest-meta').textContent = fmt + ' · ' + digestProjects.length + ' projects';
@@ -421,10 +432,11 @@ function renderDigest() {
       const bLbl = {wip:'WIP', hold:'ON HOLD', not_started:'NOT STARTED'}[proj.status] || '';
       const fc   = proj.overallPct >= 70 ? '#3b82f6' : proj.overallPct >= 40 ? '#f59e0b' : '#a855f7';
       const pocStr = [proj.pmc ? 'PMC: '+proj.pmc : '', proj.bd ? 'BD: '+proj.bd : ''].filter(Boolean).join(' · ');
+      const isOpen = !!digestExpanded[proj.code];
       return `<div class="digest-card">
-        <div class="dc-header">
+        <div class="dc-header" onclick="toggleDigestCard('${proj.code}')">
           <div>
-            <div class="dc-proj-name">${proj.name || proj.code}</div>
+            <div class="dc-proj-name"><span class="dc-chevron">${isOpen ? '▾' : '▸'}</span>${proj.name || proj.code}</div>
             <div class="dc-proj-meta">${proj.code}${pocStr ? ' · ' + pocStr : ''}</div>
           </div>
           <div class="dc-badges">
@@ -432,7 +444,7 @@ function renderDigest() {
             <span class="badge ${bCls}">${bLbl}</span>
           </div>
         </div>
-        <div class="dc-body">
+        <div class="dc-body" style="display:${isOpen ? 'block' : 'none'}">
           <div class="dc-message" id="msg-${proj.code}">${msg.replace(/\*([^*]+)\*/g,'<strong>$1</strong>').replace(/_([^_]+)_/g,'<em>$1</em>')}</div>
         </div>
         <div class="dc-footer">
@@ -444,6 +456,18 @@ function renderDigest() {
         </div>
       </div>`;
     }).join('') + '</div>';
+}
+
+function toggleDigestCard(code) {
+  digestExpanded[code] = !digestExpanded[code];
+  renderDigest();
+}
+
+function toggleExpandAll() {
+  digestAllExpanded = !digestAllExpanded;
+  digestProjects.forEach(p => { digestExpanded[p.code] = digestAllExpanded; });
+  document.getElementById('expand-all-btn').textContent = digestAllExpanded ? '⊟ Collapse all' : '⊞ Expand all';
+  renderDigest();
 }
 
 function getMsgText(projCode) {
